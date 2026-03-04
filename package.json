@@ -1,0 +1,7 @@
+{
+  "name": "classchat",
+  "version": "1.0.0",
+  "dependencies": {
+    "livekit-server-sdk": "^2.0.0"
+  }
+}
