@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Aide — ClassChat</title>
+<meta name="description" content="Centre d'aide ClassChat — FAQ et assistant IA disponible 24h/24.">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--acc:#8b7cf8;--acc2:#a78bfa;--acc3:#c4b5fd;--bg:#0a0812;--s1:#110f1e;--s2:#1a1730;--s3:#252038;--text:#f0eeff;--text2:#b8b0d4;--muted:#7b7499;--border:rgba(139,124,248,.15);--border2:rgba(255,255,255,.07);--red:#f87171}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse 70% 50% at 15% 10%,rgba(139,124,248,.15) 0%,transparent 60%),radial-gradient(ellipse 50% 60% at 85% 80%,rgba(167,139,250,.1) 0%,transparent 55%)}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:18px 40px;background:rgba(10,8,18,.7);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+.nav-logo{display:flex;align-items:center;gap:10px;font-family:'Syne',sans-serif;font-weight:800;font-size:20px;color:var(--text);text-decoration:none}
+.nav-logo-icon{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,var(--acc),var(--acc2));display:flex;align-items:center;justify-content:center;font-size:18px}
+.nav-links{display:flex;align-items:center;gap:6px}
+.nav-link{color:var(--muted);font-size:14px;font-weight:700;padding:8px 16px;border-radius:10px;text-decoration:none;transition:all .2s}
+.nav-link:hover,.nav-link.active{color:var(--text);background:rgba(255,255,255,.06)}
+.nav-cta{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;font-size:14px;font-weight:800;padding:10px 22px;border-radius:12px;text-decoration:none}
+
+/* LAYOUT */
+.wrap{max-width:1100px;margin:0 auto;padding:110px 24px 80px;position:relative;z-index:1;display:grid;grid-template-columns:1fr 420px;gap:40px;align-items:start}
+@media(max-width:900px){.wrap{grid-template-columns:1fr}.chat-sticky{position:static!important;top:auto}}
+
+/* LEFT — FAQ */
+.page-hero{margin-bottom:40px}
+.hero-tag{display:inline-flex;align-items:center;gap:8px;background:rgba(139,124,248,.12);border:1px solid rgba(139,124,248,.25);border-radius:100px;padding:7px 18px;font-size:13px;font-weight:800;color:var(--acc3);margin-bottom:20px}
+h1{font-family:'Syne',sans-serif;font-size:clamp(30px,5vw,48px);font-weight:800;letter-spacing:-1.5px;margin-bottom:12px;line-height:1.1}
+.grad{background:linear-gradient(135deg,var(--acc),var(--acc2),var(--acc3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.lead{font-size:16px;color:var(--muted);font-weight:600;line-height:1.8}
+
+/* FAQ */
+.faq-section{margin-bottom:36px}
+.faq-section-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:var(--acc2);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.faq-item{background:var(--s1);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:8px;transition:border-color .2s}
+.faq-item:hover{border-color:rgba(139,124,248,.3)}
+.faq-q{padding:16px 20px;font-size:15px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.faq-q-text{flex:1}
+.faq-arrow{font-size:12px;color:var(--muted);transition:transform .25s;flex-shrink:0}
+.faq-item.open .faq-arrow{transform:rotate(180deg)}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .3s ease,padding .3s ease}
+.faq-item.open .faq-a{max-height:300px;padding:0 20px 18px}
+.faq-a-inner{font-size:14px;color:var(--text2);font-weight:600;line-height:1.8;border-top:1px solid var(--border2);padding-top:14px}
+.faq-a-inner a{color:var(--acc2);font-weight:800}
+.faq-a-inner code{background:var(--s2);border-radius:6px;padding:2px 7px;font-size:13px;font-family:monospace;color:var(--acc3)}
+
+/* CHAT BOT */
+.chat-sticky{position:sticky;top:80px}
+.chat-card{background:var(--s1);border:1px solid var(--border);border-radius:24px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.4)}
+.chat-hdr{padding:18px 20px;background:linear-gradient(135deg,rgba(139,124,248,.15),rgba(167,139,250,.08));border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.chat-av{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--acc),var(--acc2));display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;box-shadow:0 4px 16px rgba(139,124,248,.35)}
+.chat-hdr-info{flex:1}
+.chat-hdr-name{font-family:'Syne',sans-serif;font-size:15px;font-weight:800}
+.chat-hdr-status{font-size:12px;color:var(--muted);font-weight:600;display:flex;align-items:center;gap:5px}
+.chat-dot{width:7px;height:7px;background:#22c55e;border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.7)}}
+.chat-msgs{height:360px;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px}
+.chat-msgs::-webkit-scrollbar{width:4px}
+.chat-msgs::-webkit-scrollbar-thumb{background:var(--s3);border-radius:4px}
+.chat-msg{display:flex;gap:8px;animation:msgIn .2s ease}
+@keyframes msgIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.chat-msg.user{flex-direction:row-reverse}
+.chat-bubble{max-width:85%;padding:11px 15px;border-radius:18px;font-size:13px;font-weight:600;line-height:1.6}
+.chat-msg.bot .chat-bubble{background:var(--s2);color:var(--text);border-bottom-left-radius:4px}
+.chat-msg.user .chat-bubble{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;border-bottom-right-radius:4px}
+.chat-msg-av{width:30px;height:30px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px}
+.chat-msg.bot .chat-msg-av{background:var(--s3)}
+.chat-msg.user .chat-msg-av{background:var(--acc);font-weight:900;font-size:12px;color:#fff}
+.typing-bubble{display:flex;gap:4px;align-items:center;padding:12px 16px}
+.typing-bubble span{width:7px;height:7px;background:var(--muted);border-radius:50%;animation:tdot 1.2s infinite}
+.typing-bubble span:nth-child(2){animation-delay:.2s}
+.typing-bubble span:nth-child(3){animation-delay:.4s}
+@keyframes tdot{0%,80%,100%{transform:scale(.6);opacity:.4}40%{transform:scale(1);opacity:1}}
+.chat-suggestions{padding:8px 14px;display:flex;flex-wrap:wrap;gap:6px;border-top:1px solid var(--border2)}
+.chat-sug{background:var(--s2);border:1px solid var(--border2);border-radius:20px;padding:6px 12px;font-size:12px;font-weight:700;color:var(--text2);cursor:pointer;transition:all .2s;white-space:nowrap}
+.chat-sug:hover{border-color:var(--acc);color:var(--text);background:var(--s3)}
+.chat-inp-row{padding:12px 14px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:flex-end}
+.chat-inp{flex:1;background:var(--s2);border:1.5px solid var(--border2);border-radius:14px;padding:11px 14px;color:var(--text);font-size:13px;font-weight:600;outline:none;resize:none;max-height:100px;font-family:'Nunito',sans-serif;transition:border-color .2s;line-height:1.5}
+.chat-inp:focus{border-color:var(--acc)}
+.chat-inp::placeholder{color:var(--muted)}
+.chat-send{width:40px;height:40px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;font-size:16px;cursor:pointer;flex-shrink:0;transition:all .2s;display:flex;align-items:center;justify-content:center}
+.chat-send:hover{transform:scale(1.05)}
+.chat-send:disabled{opacity:.4;pointer-events:none}
+
+/* CONTACT */
+.contact-card{background:var(--s1);border:1px solid var(--border);border-radius:20px;padding:24px;margin-top:20px;text-align:center}
+.contact-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;margin-bottom:8px}
+.contact-sub{font-size:13px;color:var(--muted);font-weight:600;line-height:1.7;margin-bottom:16px}
+.contact-btn{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;font-weight:800;font-size:13px;padding:11px 22px;border-radius:12px;text-decoration:none;transition:all .2s}
+.contact-btn:hover{transform:translateY(-1px)}
+
+footer{border-top:1px solid var(--border);padding:32px 40px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;position:relative;z-index:1}
+.footer-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:16px;color:var(--acc3)}
+.footer-links{display:flex;gap:24px}
+.footer-links a{color:var(--muted);font-size:13px;font-weight:700;text-decoration:none;transition:color .2s}
+.footer-links a:hover{color:var(--text)}
+@media(max-width:600px){nav{padding:14px 20px}.nav-links .nav-link{display:none}footer{flex-direction:column;text-align:center}}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo"><div class="nav-logo-icon">💬</div>ClassChat</a>
+  <div class="nav-links">
+    <a href="/" class="nav-link">Accueil</a>
+    <a href="studio" class="nav-link">🎬 Studio</a>
+    <a href="aide" class="nav-link active">❓ Aide</a>
+    <a href="app" class="nav-cta">Lancer l'app →</a>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <!-- GAUCHE — FAQ -->
+  <div>
+    <div class="page-hero">
+      <div class="hero-tag">❓ Centre d'aide</div>
+      <h1>Comment on peut<br><span class="grad">t'aider ?</span></h1>
+      <p class="lead">Trouve une réponse dans la FAQ ou pose ta question à notre assistant IA disponible 24h/24.</p>
+    </div>
+
+    <!-- FAQ DÉMARRAGE -->
+    <div class="faq-section">
+      <div class="faq-section-title">🚀 Démarrage</div>
+
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q"><span class="faq-q-text">Comment rejoindre une salle ?</span><span class="faq-arrow">▼</span></div>
+        <div class="faq-a"><div class="faq-a-inner">Sur la page d'accueil, entre le code de ta salle (ex: <code>406</code> ou <code>4eme-406</code>) dans le champ "Code de la salle" et clique sur <strong>Rejoindre</strong>. Tu peux aussi parcourir les classes du collège et cliquer directement sur ta salle.</div></div>
+      </div>
+
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q"><span class="faq-q-text">Faut-il créer un compte ?</span><span class="faq-arrow">▼</span></div>
+        <div class="faq-a"><div class="faq-a-inner">Non ! ClassChat fonctionne sans inscription. Tu entres juste ton pseudo, tu choisis ta salle, et c'est parti. Aucun email, aucun mot de passe requis pour le chat.</div></div>
+      </div>
+
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q"><span class="faq-q-text">Comment créer ma propre salle ?</span><span class="faq-arrow">▼</span></div>
+        <div class="faq-a"><div class="faq-a-inner">Clique sur le bouton <strong>+ Créer</strong> dans le menu principal. Donne un nom à ta salle (ex: ton numéro de classe), choisis si elle est publique ou privée, et partage le code avec tes amis.</div></div>
+      </div>
+
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q"><span class="faq-q-text">Comment changer mon pseudo ou ma photo ?</span><span class="faq-arrow">▼</span></div>
+        <div class="faq-a"><div class="faq-a-inner">Clique sur ton avatar en haut ou dans le menu ⚙️ Réglages. Tu peux changer ton pseudo, uploader une photo, créer un avatar avec l'outil intégré, ou même transformer ta photo en avatar.</div></div>
+      </div>
+    </div>
+
+    <!-- FAQ FONCTIONNALITÉS -->
+    <div class="faq-section">
+      <div class="faq-section-title">💬 Fonctionnalités</div>
+
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q"><span class="faq-q-text">Comment envoyer un message vocal ?</span><span class="faq-arrow">▼</span></div>
+        <div class="faq-a"><div class="faq-a-inner"><strong>Maintiens le bouton 🎤 microphone</strong> appuyé pour enregistrer. Relâche pour envoyer. Si tu glisses ton doigt vers la gauche avant de relâcher, le message est annulé.</div></div>
+      </div>
+
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q"><span class="faq-q-text">Comment envoyer une photo ou une vidéo ?</span><span class="faq-arrow">▼</span></div>
+        <div class="faq-a"><div class="faq-a-inner">Clique sur l'icône 📎 trombone dans la barre de saisie. Tu peux choisir un fichier depuis ta galerie. Tu peux aussi prendre une photo directement avec la caméra depuis le bouton 📷 dans le menu.</div></div>
+      </div>
+
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q"><span class="faq-q-text">Comment jouer au Puissance 4 ?</span><span class="faq-arrow">▼</span></div>
+        <div class="faq-a"><div class="faq-a-inner">Va dans tes <strong>Messages privés (DM)</strong> avec un ami, puis clique sur le bouton 🎮 en haut de la conversation. Le jeu se lance directement dans le chat !</div></div>
+      </div>
+
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q"><span class="faq-q-text">Comment lancer un appel audio ou vidéo ?</span><span class="faq-arrow">▼</span></div>
+        <div class="faq-a"><div class="faq-a-inner">Dans une salle, clique sur l'onglet <strong>📞 Appels</strong> dans la barre du bas. Tu peux lancer un appel audio ou vidéo. Tous les membres de la salle peuvent rejoindre.</div></div>
+      </div>
+
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q"><span class="faq-q-text">C'est quoi ClassChat Studio ?</span><span class="faq-arrow">▼</span></div>
+        <div class="faq-a"><div class="faq-a-inner">Studio est la plateforme vidéo de ClassChat — comme un YouTube pour ta classe. Tu peux publier des vidéos, les commenter, les liker et les partager. Accès via <a href="/studio">classchat.vercel.app/studio</a>.</div></div>
+      </div>
+    </div>
+
+    <!-- FAQ TECHNIQUE -->
+    <div class="faq-section">
+      <div class="faq-section-title">⚙️ Technique & Problèmes</div>
+
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q"><span class="faq-q-text">L'app ne charge pas ou est lente</span><span class="faq-arrow">▼</span></div>
+        <div class="faq-a"><div class="faq-a-inner">Essaie de <strong>rafraîchir la page</strong> (F5 ou tirer vers le bas sur mobile). Vérifie ta connexion internet. Si le problème persiste, vide le cache de ton navigateur (Ctrl+Shift+Delete).</div></div>
+      </div>
+
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q"><span class="faq-q-text">Je ne vois pas les nouveaux messages</span><span class="faq-arrow">▼</span></div>
+        <div class="faq-a"><div class="faq-a-inner">ClassChat utilise une connexion temps réel. Si les messages ne s'actualisent pas, vérifie ta connexion et recharge la page. Il peut aussi y avoir un délai si tu es sur un réseau instable (ex: 4G faible).</div></div>
+      </div>
+
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q"><span class="faq-q-text">Comment installer ClassChat sur mon téléphone ?</span><span class="faq-arrow">▼</span></div>
+        <div class="faq-a"><div class="faq-a-inner">Ouvre ClassChat dans <strong>Chrome sur Android</strong> ou <strong>Safari sur iPhone</strong>. Un bouton "Installer" ou "Ajouter à l'écran d'accueil" apparaît. L'app s'installe comme une vraie application, sans passer par le Play Store !</div></div>
+      </div>
+
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q"><span class="faq-q-text">Mes données sont-elles sécurisées ?</span><span class="faq-arrow">▼</span></div>
+        <div class="faq-a"><div class="faq-a-inner">ClassChat ne collecte aucune donnée personnelle. Les messages sont stockés de façon sécurisée sur Supabase. Les salles privées sont protégées par code. Aucun email ni mot de passe n'est requis pour le chat.</div></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- DROITE — CHATBOT IA -->
+  <div class="chat-sticky">
+    <div class="chat-card">
+      <div class="chat-hdr">
+        <div class="chat-av">🤖</div>
+        <div class="chat-hdr-info">
+          <div class="chat-hdr-name">Mia — Assistante ClassChat</div>
+          <div class="chat-hdr-status"><div class="chat-dot"></div> En ligne 24h/24</div>
+        </div>
+      </div>
+      <div class="chat-msgs" id="chatMsgs">
+        <div class="chat-msg bot">
+          <div class="chat-msg-av">🤖</div>
+          <div class="chat-bubble">Salut ! Je suis Mia, l'assistante ClassChat 👋<br>Pose-moi n'importe quelle question sur l'app, je suis là pour t'aider !</div>
+        </div>
+      </div>
+      <div class="chat-suggestions" id="chatSugs">
+        <div class="chat-sug" onclick="askSug(this)">Comment rejoindre une salle ?</div>
+        <div class="chat-sug" onclick="askSug(this)">Envoyer un vocal ?</div>
+        <div class="chat-sug" onclick="askSug(this)">C'est quoi Studio ?</div>
+        <div class="chat-sug" onclick="askSug(this)">Installer l'app ?</div>
+      </div>
+      <div class="chat-inp-row">
+        <textarea class="chat-inp" id="chatInp" placeholder="Pose ta question à Mia..." rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}" oninput="autoResize(this)"></textarea>
+        <button class="chat-send" id="chatSend" onclick="sendChat()">➤</button>
+      </div>
+    </div>
+
+    <div class="contact-card">
+      <div class="contact-title">💌 Contacter Lucas</div>
+      <div class="contact-sub">Mia n'a pas pu répondre à ta question ? Lucas, le créateur de ClassChat, peut t'aider directement.</div>
+      <a href="/cdn-cgi/l/email-protection#8deee1ecfefeeee5ecf9a3fef8fdfde2fff9cdeae0ece4e1a3eee2e0" class="contact-btn">✉️ Envoyer un message</a>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <div class="footer-logo">💬 ClassChat</div>
+  <div class="footer-links">
+    <a href="app">App</a>
+    <a href="studio">Studio</a>
+    <a href="apropos">À propos</a>
+    <a href="aide">Aide</a>
+  </div>
+  <div style="color:var(--muted);font-size:12px;font-weight:600">Fait avec ❤️ pour les collégiens</div>
+</footer>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+// ══ CONFIG ══
+var SB_URL='https://ersxfcqumaftjucrqjwj.supabase.co';
+var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVyc3hmY3F1bWFmdGp1Y3JxandqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2NDg3NDIsImV4cCI6MjA4ODIyNDc0Mn0.CO_x6t-VyoZ9q2lMRMI7JFuBdTZl_axGpgLcB6POFTE';
+var SB=supabase.createClient(SB_URL,SB_KEY);
+
+// ══ FAQ TOGGLE ══
+function toggleFaq(el){
+  var isOpen=el.classList.contains('open');
+  document.querySelectorAll('.faq-item.open').forEach(function(i){i.classList.remove('open');});
+  if(!isOpen) el.classList.add('open');
+}
+
+// ══ CHATBOT MIA ══
+var _chatHistory=[];
+var _chatBusy=false;
+
+var MIA_SYSTEM=`Tu es Mia, l'assistante virtuelle de ClassChat — une application de chat pour collégiens.
+Réponds TOUJOURS en français, de façon claire, courte et sympa (3-5 phrases max).
+Tu connais parfaitement ClassChat :
+- Chat temps réel sans inscription (juste un pseudo)
+- Salles avec code (ex: 406, 4eme-406)
+- Messages vocaux (maintenir le bouton micro)
+- Photos, GIFs, messages texte, réactions
+- Messages privés (DM) avec Puissance 4
+- Appels audio et vidéo de groupe
+- ClassChat Studio : plateforme vidéo à /studio
+- PWA : installable sur téléphone depuis Chrome/Safari
+- Thèmes de couleur et mode sombre dans les réglages
+- Avatars et photo de profil
+Si tu ne connais pas la réponse, dis-le honnêtement et propose à l'utilisateur de contacter Lucas.
+Ne parle PAS de sujets hors de ClassChat. Reste focus sur l'aide à l'application.`;
+
+async function sendChat(){
+  if(_chatBusy) return;
+  var inp=document.getElementById('chatInp');
+  var msg=(inp.value||'').trim();
+  if(!msg) return;
+  inp.value=''; inp.style.height='';
+  document.getElementById('chatSugs').style.display='none';
+
+  addMsg('user', msg);
+  _chatHistory.push({role:'user',content:msg});
+  showTyping();
+  _chatBusy=true;
+  document.getElementById('chatSend').disabled=true;
+
+  try{
+    var resp=await fetch('/api/mia',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({messages:_chatHistory})
+    });
+    var data=await resp.json();
+    hideTyping();
+    if(!resp.ok||data.error){
+      var errMsg='❌ '+( data.error||'Erreur '+resp.status);
+      addMsg('bot', errMsg);
+      logUnanswered(msg, errMsg);
+    } else {
+      var reply=data.reply||'Désolée, pas de réponse !';
+      addMsg('bot', reply);
+      _chatHistory.push({role:'assistant',content:reply});
+      if(reply.toLowerCase().includes('ne sais pas')||reply.toLowerCase().includes('contacter lucas')){
+        logUnanswered(msg, reply);
+      }
+    }
+
+  }catch(e){
+    hideTyping();
+    addMsg('bot', '❌ Erreur : '+e.message);
+    logUnanswered(msg, 'ERREUR: '+e.message);
+  }
+
+  _chatBusy=false;
+  document.getElementById('chatSend').disabled=false;
+}
+
+function addMsg(role, text){
+  var msgs=document.getElementById('chatMsgs');
+  var div=document.createElement('div');
+  div.className='chat-msg '+role;
+  var avContent=role==='bot'?'🤖':'👤';
+  div.innerHTML='<div class="chat-msg-av">'+avContent+'</div><div class="chat-bubble">'+escHtml(text).replace(/\n/g,'<br>')+'</div>';
+  msgs.appendChild(div);
+  msgs.scrollTop=msgs.scrollHeight;
+}
+
+var _typingEl=null;
+function showTyping(){
+  var msgs=document.getElementById('chatMsgs');
+  _typingEl=document.createElement('div');
+  _typingEl.className='chat-msg bot';
+  _typingEl.innerHTML='<div class="chat-msg-av">🤖</div><div class="chat-bubble"><div class="typing-bubble"><span></span><span></span><span></span></div></div>';
+  msgs.appendChild(_typingEl);
+  msgs.scrollTop=msgs.scrollHeight;
+}
+function hideTyping(){if(_typingEl){_typingEl.remove();_typingEl=null;}}
+
+function askSug(el){
+  document.getElementById('chatInp').value=el.textContent;
+  sendChat();
+}
+
+function autoResize(el){
+  el.style.height='auto';
+  el.style.height=Math.min(el.scrollHeight,100)+'px';
+}
+
+function escHtml(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// Log questions sans réponse dans Supabase
+async function logUnanswered(question, botReply){
+  try{
+    await SB.from('mia_unanswe
