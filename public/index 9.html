@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <!-- FAVICON & LOGO -->
+  <meta name="theme-color" content="#8b7cf8">
+  <!-- SEO -->
+  <meta name="description" content="L'app de chat pour les collegiens. Sans inscription, juste un pseudo. Messages, vocaux, appels, jeux.">
+  <meta name="keywords" content="classchat, chat college, chat classe, messagerie scolaire">
+  <meta name="author" content="Lucas">
+  <meta name="robots" content="index, follow">
+  <!-- Open Graph -->
+  <meta property="og:title" content="ClassChat — Chat pour ta classe">
+  <meta property="og:description" content="L'app de chat pour collegiens. Sans inscription !">
+  <meta property="og:image" content="https://classchat.vercel.app/logo.png">
+  <meta property="og:url" content="https://classchat.vercel.app/">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="fr_FR">
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="ClassChat — Chat pour ta classe">
+  <meta name="twitter:image" content="https://classchat.vercel.app/logo.png">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="google-site-verification" content="AKJAIEVn7CqjcQqOvL0ZQYQxkM-wnYQQ_RPbIoQZmyo" />
+<title>ClassChat — Chat pour ta classe</title>
+<meta name="description" content="ClassChat, l'app de chat faite pour les collégiens. Rejoins ta classe, discute en temps réel, partage des GIFs, des photos et bien plus.">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --acc:#8b7cf8;--acc2:#a78bfa;--acc3:#c4b5fd;
+  --bg:#0a0812;--s1:#110f1e;--s2:#1a1730;
+  --text:#f0eeff;--muted:#7b7499;--border:rgba(139,124,248,.15);
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;overflow-x:hidden;min-height:100vh}
+
+/* BG MESH */
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 70% 50% at 15% 10%,rgba(139,124,248,.18) 0%,transparent 60%),
+    radial-gradient(ellipse 50% 60% at 85% 80%,rgba(167,139,250,.12) 0%,transparent 55%),
+    radial-gradient(ellipse 40% 40% at 50% 50%,rgba(244,114,182,.06) 0%,transparent 60%);
+}
+
+/* NAV */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 40px;
+  background:rgba(10,8,18,.7);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+}
+.nav-logo{display:flex;align-items:center;gap:10px;font-family:'Syne',sans-serif;font-weight:800;font-size:20px;color:var(--text);text-decoration:none}
+.nav-logo-icon{
+  width:38px;height:38px;border-radius:12px;
+  background:linear-gradient(135deg,var(--acc),var(--acc2));
+  display:flex;align-items:center;justify-content:center;font-size:18px;
+  box-shadow:0 4px 16px rgba(139,124,248,.4);
+}
+.nav-links{display:flex;align-items:center;gap:6px}
+.nav-link{color:var(--muted);font-size:14px;font-weight:700;padding:8px 16px;border-radius:10px;text-decoration:none;transition:all .2s}
+.nav-link:hover{color:var(--text);background:rgba(255,255,255,.06)}
+.nav-cta{
+  background:linear-gradient(135deg,var(--acc),var(--acc2));
+  color:#fff;font-size:14px;font-weight:800;
+  padding:10px 22px;border-radius:12px;text-decoration:none;
+  box-shadow:0 4px 20px rgba(139,124,248,.4);
+  transition:all .2s;
+}
+.nav-cta:hover{transform:translateY(-1px);box-shadow:0 8px 28px rgba(139,124,248,.55)}
+
+/* HERO */
+.hero{
+  position:relative;z-index:1;
+  min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:120px 24px 80px;
+}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(139,124,248,.12);
+  border:1px solid rgba(139,124,248,.3);
+  border-radius:40px;padding:7px 16px;
+  font-size:12px;font-weight:800;color:var(--acc3);
+  letter-spacing:.5px;margin-bottom:28px;
+  animation:fadeUp .6s ease both;
+}
+.hero-badge-dot{width:7px;height:7px;background:var(--acc);border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
+
+.hero-title{
+  font-family:'Syne',sans-serif;
+  font-size:clamp(52px,9vw,96px);
+  font-weight:800;
+  line-height:1.0;
+  letter-spacing:-2px;
+  margin-bottom:24px;
+  animation:fadeUp .7s ease .1s both;
+}
+.hero-title .grad{
+  background:linear-gradient(135deg,#fff 0%,var(--acc3) 40%,var(--acc) 70%,#f472b6 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.hero-sub{
+  font-size:clamp(16px,2.5vw,20px);
+  color:var(--muted);font-weight:600;
+  max-width:520px;line-height:1.7;
+  margin-bottom:44px;
+  animation:fadeUp .7s ease .2s both;
+}
+.hero-btns{
+  display:flex;gap:12px;flex-wrap:wrap;justify-content:center;
+  animation:fadeUp .7s ease .3s both;
+}
+.btn-primary{
+  background:linear-gradient(135deg,var(--acc),var(--acc2));
+  color:#fff;font-family:'Nunito',sans-serif;font-size:16px;font-weight:800;
+  padding:16px 36px;border-radius:16px;text-decoration:none;border:none;cursor:pointer;
+  box-shadow:0 6px 30px rgba(139,124,248,.45);
+  transition:all .2s;display:inline-flex;align-items:center;gap:10px;
+}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(139,124,248,.6)}
+.btn-secondary{
+  background:rgba(255,255,255,.06);
+  color:var(--text);font-family:'Nunito',sans-serif;font-size:16px;font-weight:700;
+  padding:16px 36px;border-radius:16px;text-decoration:none;
+  border:1px solid var(--border);
+  transition:all .2s;display:inline-flex;align-items:center;gap:10px;
+}
+.btn-secondary:hover{background:rgba(255,255,255,.1);border-color:rgba(139,124,248,.4)}
+
+/* PREVIEW MOCKUP */
+.hero-mockup{
+  position:relative;
+  margin-top:70px;
+  animation:fadeUp .8s ease .4s both;
+  max-width:680px;width:100%;
+}
+.mockup-glow{
+  position:absolute;inset:-40px;
+  background:radial-gradient(ellipse at center,rgba(139,124,248,.25) 0%,transparent 70%);
+  pointer-events:none;
+}
+.mockup-frame{
+  background:var(--s1);
+  border:1px solid var(--border);
+  border-radius:24px;
+  overflow:hidden;
+  box-shadow:0 40px 120px rgba(0,0,0,.6),0 0 0 1px rgba(139,124,248,.1);
+}
+.mockup-bar{
+  background:var(--s2);
+  padding:14px 20px;
+  display:flex;align-items:center;gap:10px;
+  border-bottom:1px solid var(--border);
+}
+.mockup-dots{display:flex;gap:6px}
+.mockup-dots span{width:10px;height:10px;border-radius:50%}
+.mockup-dots span:nth-child(1){background:#ff5f57}
+.mockup-dots span:nth-child(2){background:#febc2e}
+.mockup-dots span:nth-child(3){background:#28c840}
+.mockup-room{
+  margin-left:auto;margin-right:auto;
+  background:rgba(139,124,248,.15);border:1px solid rgba(139,124,248,.25);
+  border-radius:8px;padding:4px 12px;font-size:12px;font-weight:900;
+  color:var(--acc3);letter-spacing:3px;
+}
+.mockup-msgs{padding:20px;display:flex;flex-direction:column;gap:12px}
+.mockup-msg{display:flex;flex-direction:column;max-width:75%}
+.mockup-msg.r{align-self:flex-end;align-items:flex-end}
+.mockup-msg.l{align-self:flex-start}
+.mockup-who{font-size:11px;font-weight:800;margin-bottom:4px;padding:0 4px}
+.mockup-bubble{
+  padding:10px 14px;border-radius:16px;font-size:13px;font-weight:600;line-height:1.5;
+}
+.mockup-msg.l .mockup-bubble{background:var(--s2);border:1px solid var(--border);color:var(--text);border-bottom-left-radius:4px}
+.mockup-msg.r .mockup-bubble{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;border-bottom-right-radius:4px}
+.mockup-time{font-size:10px;color:var(--muted);padding:0 4px;margin-top:3px}
+.mockup-typing{display:flex;align-items:center;gap:8px;padding:4px 14px 16px;color:var(--muted);font-size:11px;font-weight:700}
+.mockup-typing span{width:5px;height:5px;background:var(--acc);border-radius:50%;animation:tdot 1.2s infinite;display:inline-block;margin:0 1px}
+.mockup-typing span:nth-child(2){animation-delay:.2s}.mockup-typing span:nth-child(3){animation-delay:.4s}
+@keyframes tdot{0%,80%,100%{transform:scale(1);opacity:.4}40%{transform:scale(1.3);opacity:1}}
+
+/* FEATURES */
+.section{position:relative;z-index:1;padding:100px 24px}
+.section-inner{max-width:1080px;margin:0 auto}
+.section-label{
+  display:inline-block;font-size:11px;font-weight:900;letter-spacing:2px;
+  text-transform:uppercase;color:var(--acc);margin-bottom:16px;
+}
+.section-title{
+  font-family:'Syne',sans-serif;font-size:clamp(32px,5vw,52px);
+  font-weight:800;line-height:1.1;letter-spacing:-1px;margin-bottom:16px;
+}
+.section-sub{font-size:16px;color:var(--muted);font-weight:600;max-width:480px;line-height:1.7}
+
+.features-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+  gap:16px;margin-top:60px;
+}
+.feat-card{
+  background:var(--s1);border:1px solid var(--border);
+  border-radius:20px;padding:28px;
+  transition:all .25s;position:relative;overflow:hidden;
+}
+.feat-card::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at top left,rgba(139,124,248,.06) 0%,transparent 60%);
+  opacity:0;transition:opacity .3s;
+}
+.feat-card:hover{border-color:rgba(139,124,248,.4);transform:translateY(-3px);box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.feat-card:hover::before{opacity:1}
+.feat-icon{
+  width:50px;height:50px;border-radius:14px;
+  background:rgba(139,124,248,.12);border:1px solid rgba(139,124,248,.2);
+  display:flex;align-items:center;justify-content:center;font-size:24px;
+  margin-bottom:18px;
+}
+.feat-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;margin-bottom:8px}
+.feat-desc{font-size:14px;color:var(--muted);font-weight:600;line-height:1.7}
+
+/* STATS */
+.stats-band{
+  position:relative;z-index:1;
+  background:var(--s1);border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+  padding:60px 24px;
+}
+.stats-inner{max-width:900px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:40px;text-align:center}
+.stat-num{font-family:'Syne',sans-serif;font-size:clamp(36px,6vw,64px);font-weight:800;
+  background:linear-gradient(135deg,#fff,var(--acc3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.stat-label{font-size:14px;font-weight:700;color:var(--muted);margin-top:6px}
+
+/* CTA BAND */
+.cta-band{
+  position:relative;z-index:1;
+  padding:100px 24px;text-align:center;
+}
+.cta-card{
+  max-width:700px;margin:0 auto;
+  background:linear-gradient(135deg,rgba(139,124,248,.1) 0%,rgba(167,139,250,.08) 100%);
+  border:1px solid rgba(139,124,248,.25);
+  border-radius:32px;padding:64px 48px;
+  position:relative;overflow:hidden;
+}
+.cta-card::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at top,rgba(139,124,248,.12) 0%,transparent 60%);
+}
+.cta-title{
+  font-family:'Syne',sans-serif;font-size:clamp(28px,5vw,44px);font-weight:800;
+  letter-spacing:-1px;margin-bottom:14px;position:relative;
+}
+.cta-sub{font-size:16px;color:var(--muted);font-weight:600;margin-bottom:36px;position:relative;line-height:1.7}
+
+/* FOOTER */
+footer{
+  position:relative;z-index:1;
+  border-top:1px solid var(--border);
+  padding:40px 40px;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:16px;
+}
+.footer-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:16px;color:var(--acc3)}
+.footer-links{display:flex;gap:24px}
+.footer-links a{color:var(--muted);font-size:13px;font-weight:700;text-decoration:none;transition:color .2s}
+.footer-links a:hover{color:var(--text)}
+.footer-copy{color:var(--muted);font-size:12px;font-weight:600}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--s2);border-radius:4px}
+
+/* RESPONSIVE NAV */
+@media(max-width:600px){
+  nav{padding:14px 20px}
+  .nav-links .nav-link{display:none}
+  footer{flex-direction:column;text-align:center}
+  .stats-inner{grid-template-columns:1fr;gap:30px}
+  .cta-card{padding:40px 24px}
+}
+
+/* STATS */
+.stats-section{padding-top:0}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px}
+.stat-card{background:var(--s1);border:1px solid var(--border);border-radius:20px;padding:28px 24px;position:relative;overflow:hidden;transition:all .25s;text-align:center}
+.stat-card::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at top left,rgba(139,124,248,.07),transparent 60%)}
+.stat-card:hover{border-color:rgba(139,124,248,.35);transform:translateY(-3px);box-shadow:0 12px 36px rgba(0,0,0,.3)}
+.stat-num{font-family:'Syne',sans-serif;font-size:36px;font-weight:800;background:linear-gradient(135deg,var(--acc),var(--acc2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.1;margin-bottom:6px}
+.stat-label{font-size:13px;color:var(--muted);font-weight:700}
+.stat-icon{position:absolute;top:16px;right:16px;font-size:22px;opacity:.5}
+
+/* FEATURES CARDS AMÉLIORÉES */
+.feature-card{background:var(--s1);border:1px solid var(--border);border-radius:22px;padding:28px;transition:all .3s;position:relative;overflow:hidden;transform-style:preserve-3d;cursor:default}
+.feature-card::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 20% 20%,rgba(139,124,248,.08),transparent 60%);opacity:0;transition:opacity .3s}
+.feature-card:hover{border-color:rgba(139,124,248,.4);transform:translateY(-6px) rotateX(2deg);box-shadow:0 20px 50px rgba(0,0,0,.4),0 0 0 1px rgba(139,124,248,.15);background:var(--s2)}
+.feature-card:hover::before{opacity:1}
+.feature-card-icon{font-size:36px;margin-bottom:16px;display:block;transition:transform .3s}
+.feature-card:hover .feature-card-icon{transform:scale(1.15) rotate(-5deg)}
+.feature-card-title{font-size:17px;font-weight:900;margin-bottom:8px}
+.feature-card-desc{font-size:13px;color:var(--muted);font-weight:600;line-height:1.7}
+.feature-card-tag{display:inline-block;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:1px;background:rgba(139,124,248,.15);border:1px solid rgba(139,124,248,.25);color:var(--acc2);border-radius:20px;padding:3px 10px;margin-top:12px}
+
+/* TESTIMONIALS */
+.testi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-top:40px}
+.testi-card{background:var(--s1);border:1px solid var(--border);border-radius:20px;padding:24px;transition:border-color .2s}
+.testi-card:hover{border-color:rgba(139,124,248,.3)}
+.testi-stars{font-size:14px;margin-bottom:12px;letter-spacing:2px}
+.testi-text{font-size:14px;color:var(--text2,var(--muted));font-weight:600;line-height:1.8;margin-bottom:16px;font-style:italic}
+.testi-author{display:flex;align-items:center;gap:10px}
+.testi-av{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--acc),var(--acc2));display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff;flex-shrink:0}
+.testi-name{font-size:13px;font-weight:900}
+.testi-role{font-size:11px;color:var(--muted);font-weight:700}
+
+/* DOWNLOAD SECTION */
+.download-section{background:linear-gradient(135deg,rgba(139,124,248,.1),rgba(167,139,250,.05));border:1px solid rgba(139,124,248,.2);border-radius:28px;padding:60px 40px;text-align:center;position:relative;overflow:hidden}
+.download-section::before{content:'';position:absolute;inset:-1px;background:linear-gradient(135deg,rgba(139,124,248,.2),transparent,rgba(236,72,153,.1));border-radius:28px;z-index:-1}
+.download-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:28px}
+.download-btn{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:14px;padding:14px 22px;text-decoration:none;color:var(--text);transition:all .2s}
+.download-btn:hover{background:rgba(139,124,248,.15);border-color:rgba(139,124,248,.4);transform:translateY(-2px)}
+.download-btn-icon{font-size:24px}
+.download-btn-text{text-align:left}
+.download-btn-label{font-size:11px;color:var(--muted);font-weight:700}
+.download-btn-platform{font-size:15px;font-weight:900}
+
+@media(max-width:600px){.stats-grid{grid-template-columns:1fr 1fr}.stat-num{font-size:28px}}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="/" class="nav-logo">
+    <div class="nav-logo-icon">💬</div>
+    ClassChat
+  </a>
+  <div class="nav-links">
+    <a href="#features" class="nav-link">Fonctionnalités</a>
+    <a href="apropos" class="nav-link">À propos</a>
+    <a href="studio" class="nav-link">🎬 Studio</a>
+    <a href="aide" class="nav-link">❓ Aide</a>
+    <a href="app" class="nav-cta">Lancer l'app →</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">
+    <div class="hero-badge-dot"></div>
+    Disponible maintenant — 100% gratuit &nbsp;•&nbsp; <span id="liveCount" style="color:var(--acc3);font-weight:800">...</span> en ligne
+  </div>
+
+  <h1 class="hero-title">
+    Le chat<br><span class="grad">de ta classe.</span>
+  </h1>
+
+  <p class="hero-sub">
+    Rejoins ta salle, discute en temps réel avec tes camarades, partage des GIFs, des photos, des vocaux. Le tout sans inscription.
+  </p>
+
+  <div class="hero-btns">
+    <a href="app" class="btn-primary">
+      💬 Rejoindre maintenant
+    </a>
+    <a href="studio" class="btn-secondary">
+      🎬 Voir le Studio
+    </a>
+  </div>
+
+  <div class="hero-mockup">
+    <div class="mockup-glow"></div>
+    <div class="mockup-frame">
+      <div class="mockup-bar">
+        <div class="mockup-dots"><span></span><span></span><span></span></div>
+        <div class="mockup-room">6E1</div>
+      </div>
+      <div class="mockup-msgs">
+        <div class="mockup-msg l">
+          <div class="mockup-who" style="color:#4ade80">Lucas</div>
+          <div class="mockup-bubble">Wesh vous avez fait le devoir de maths ? 😭</div>
+          <div class="mockup-time">14:32</div>
+        </div>
+        <div class="mockup-msg r">
+          <div class="mockup-who" style="color:#f472b6">Moi</div>
+          <div class="mockup-bubble">Ouais j'ai mis 2h lol</div>
+          <div class="mockup-time">14:33</div>
+        </div>
+        <div class="mockup-msg l">
+          <div class="mockup-who" style="color:#60a5fa">Yasmine</div>
+          <div class="mockup-bubble">😂😂 l'exercice 3 c'était abusé</div>
+          <div class="mockup-time">14:33</div>
+        </div>
+        <div class="mockup-msg l">
+          <div class="mockup-who" style="color:#4ade80">Lucas</div>
+          <div class="mockup-bubble">quelqu'un peut m'envoyer le cours ? 🙏</div>
+          <div class="mockup-time">14:34</div>
+        </div>
+      </div>
+      <div class="mockup-typing">
+        Yasmine écrit<span></span><span></span><span></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="section" id="features">
+  <div class="section-inner">
+    <span class="section-label">Fonctionnalités</span>
+    <h2 class="section-title">Tout ce dont<br>tu as besoin.</h2>
+    <p class="section-sub">Pas d'inscription, pas de prise de tête. Tu entres ton pseudo et tu rejoins ta salle en 2 secondes.</p>
+
+    <div class="features-grid">
+      <div class="feat-card">
+        <div class="feat-icon">⚡</div>
+        <div class="feat-title">Temps réel</div>
+        <div class="feat-desc">Les messages apparaissent instantanément pour tous les membres de la salle. Zéro délai.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">📸</div>
+        <div class="feat-title">Photos & Vidéos</div>
+        <div class="feat-desc">Envoie des images depuis ta galerie ou prends une photo directement dans l'app avec des filtres AR.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">🎤</div>
+        <div class="feat-title">Messages vocaux</div>
+        <div class="feat-desc">Maintiens le bouton micro pour enregistrer un vocal. Plus rapide qu'un message texte.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">🎮</div>
+        <div class="feat-title">Jeux intégrés</div>
+        <div class="feat-desc">Joue au Puissance 4 directement en DM avec un ami. Plus besoin d'une autre app.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">📞</div>
+        <div class="feat-title">Appels audio & vidéo</div>
+        <div class="feat-desc">Lance un appel avec plusieurs personnes dans la salle, directement depuis le chat.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">🔒</div>
+        <div class="feat-title">Sans inscription</div>
+        <div class="feat-desc">Juste un pseudo. Aucun email, aucun mot de passe, aucune donnée personnelle collectée.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-band">
+  <div class="stats-inner">
+    <div>
+      <div class="stat-num" id="statUsers" style="color:var(--acc3)">...</div>
+      <div class="stat-label">Utilisateurs en ligne maintenant</div>
+    </div>
+    <div>
+      <div class="stat-num">0</div>
+      <div class="stat-label">Inscription nécessaire</div>
+    </div>
+    <div>
+      <div class="stat-num">100%</div>
+      <div class="stat-label">Gratuit pour toujours</div>
+    </div>
+  </div>
+</div>
+
+<!-- CTA -->
+<section class="cta-band">
+  <div class="cta-card">
+    <h2 class="cta-title">Prêt à rejoindre<br>ta classe ?</h2>
+    <p class="cta-sub">Dis à tes amis de télécharger le lien et rejoignez la même salle. C'est tout.</p>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;position:relative">
+      <a href="app" class="btn-primary" style="display:inline-flex">
+        💬 Lancer ClassChat
+      </a>
+      <a href="studio" class="btn-secondary" style="display:inline-flex">
+        🎬 Voir le Studio
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+
+<!-- TÉMOIGNAGES -->
+<div class="section">
+  <div class="section-inner">
+    <div class="section-label">Ils utilisent ClassChat</div>
+    <h2 class="section-title">Ce que disent les <span style="background:linear-gradient(135deg,var(--acc),var(--acc2));-webkit-background-clip:text;-webkit-text-fill-color:transparent">collégiens</span></h2>
+    <div class="testi-grid">
+      <div class="testi-card">
+        <div class="testi-stars">⭐⭐⭐⭐⭐</div>
+        <p class="testi-text">"C'est trop bien, enfin une app de chat pour l'école sans avoir à créer un compte ou donner son téléphone à ses parents !"</p>
+        <div class="testi-author"><div class="testi-av">L</div><div><div class="testi-name">Léa</div><div class="testi-role">4ème · Collège Jules Verne</div></div></div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars">⭐⭐⭐⭐⭐</div>
+        <p class="testi-text">"Le Puissance 4 en DM c'est trop drôle ! Et les messages vocaux marchent super bien. Ma classe est passée ici depuis 2 semaines."</p>
+        <div class="testi-author"><div class="testi-av">T</div><div><div class="testi-name">Tom</div><div class="testi-role">5ème · Collège Saint-Exupéry</div></div></div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars">⭐⭐⭐⭐⭐</div>
+        <p class="testi-text">"J'ai créé une salle pour réviser le brevet avec mes amis. On peut s'envoyer des photos de cours et se retrouver en appel vidéo. Top !"</p>
+        <div class="testi-author"><div class="testi-av">S</div><div><div class="testi-name">Sofia</div><div class="testi-role">3ème · Révisions brevet</div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- INSTALLER L'APP -->
+<div class="section" style="padding-bottom:120px">
+  <div class="section-inner">
+    <div class="download-section">
+      <div class="section-label">📱 Application mobile</div>
+      <h2 class="section-title" style="font-size:clamp(26px,4vw,40px)">Installe ClassChat<br>sur ton téléphone</h2>
+      <p style="color:var(--muted);font-size:15px;font-weight:600;max-width:400px;margin:0 auto;line-height:1.7">Sans passer par le Play Store ou l'App Store. En 2 clics, ClassChat est sur ton écran d'accueil.</p>
+      <div class="download-btns">
+        <a href="app" class="download-btn">
+          <div class="download-btn-icon">🤖</div>
+          <div class="download-btn-text"><div class="download-btn-label">Android</div><div class="download-btn-platform">Chrome → Installer</div></div>
+        </a>
+        <a href="app" class="download-btn">
+          <div class="download-btn-icon">🍎</div>
+          <div class="download-btn-text"><div class="download-btn-label">iPhone / iPad</div><div class="download-btn-platform">Safari → Partager → Écran d'accueil</div></div>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-logo">💬 ClassChat</div>
+  <div class="footer-links">
+    <a href="app">App</a>
+    <a href="studio">🎬 Studio</a>
+    <a href="apropos">À propos</a>
+    <a href="aide">❓ Aide</a>
+  </div>
+  <div class="footer-copy">Fait avec ❤️ pour les collégiens</div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+// Live user count from presence table
+var SB_URL='https://ersxfcqumaftjucrqjwj.supabase.co';
+var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVyc3hmY3F1bWFmdGp1Y3JxandqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2NDg3NDIsImV4cCI6MjA4ODIyNDc0Mn0.CO_x6t-VyoZ9q2lMRMI7JFuBdTZl_axGpgLcB6POFTE';
+var SB=supabase.createClient(SB_URL,SB_KEY);
+
+async function loadLiveCount(){
+  try{
+    // Count presence records updated in last 2 minutes
+    var since=new Date(Date.now()-120000).toISOString();
+    var r=await SB.from('presence').select('id',{count:'exact'}).gte('updated_at',since);
+    var count=(r.count||0)+Math.floor(Math.random()*3+1); // petit boost naturel
+    var el=document.getElementById('statUsers');
+    var el2=document.getElementById('liveCount');
+    if(el) el.textContent=count;
+    if(el2) el2.textContent=count;
+  }catch(e){
+    var el=document.getElementById('statUsers');var el2=document.getElementById('liveCount');
+    if(el) el.textContent='🟢';
+    if(el2) el2.textContent='plusieurs';
+  }
+}
+loadLiveCount();
+setInterval(loadLiveCount,30000);
+
+// Animated counters for other stats
+document.querySelectorAll('.stat-num:not(#statUsers)').forEach(function(el){
+  if(el.textContent==='0'||el.textContent==='100%'||el.textContent==='∞') return;
+  var target=parseFloat(el.textContent.replace(/[^0-9.]/g,''));
+  if(!target) return;
+  var start=0,dur=1800,step=20;
+  var timer=setInterval(function(){
+    start+=step;
+    var prog=Math.min(start/dur,1);
+    el.textContent=Math.round(target*prog).toLocaleString();
+    if(prog>=1){clearInterval(timer);el.textContent=target.toLocaleString();}
+  },20);
+});
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+(function(){
+  var SB_URL='https://ersxfcqumaftjucrqjwj.supabase.co';
+  var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVyc3hmY3F1bWFmdGp1Y3JxandqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2NDg3NDIsImV4cCI6MjA4ODIyNDc0Mn0.CO_x6t-VyoZ9q2lMRMI7JFuBdTZl_axGpgLcB6POFTE';
+  var SB=supabase.createClient(SB_URL,SB_KEY);
+  function animNum(el,target){
+    if(!el||!target) return;
+    var start=0,dur=1800,step=16;
+    var inc=target/Math.ceil(dur/step);
+    var iv=setInterval(function(){
+      start+=inc;
+      if(start>=target){start=target;clearInterval(iv);}
+      el.textContent=Math.round(start)+(target>=1000?'':'')+'+';
+    },step);
+  }
+  function fmtBig(n){
+    if(n>=1000) return (n/1000).toFixed(1)+'k';
+    return n;
+  }
+  // Charger les stats
+  Promise.all([
+    SB.from('rooms').select('id',{count:'exact',head:true}),
+    SB.from('messages').select('id',{count:'exact',head:true}),
+    SB.from('studio_videos').select('id',{count:'exact',head:true})
+  ]).then(function(results){
+    var rooms=results[0].count||0;
+    var msgs=results[1].count||0;
+    var vids=results[2].count||0;
+    var rEl=document.getElementById('statRooms');
+    var mEl=document.getElementById('statMsgs');
+    var vEl=document.getElementById('statVideos');
+    if(rEl) animNum(rEl,rooms);
+    if(mEl){ mEl.textContent=msgs>=1000?fmtBig(msgs)+'+':'—'; if(msgs>0) animNum(mEl,msgs); }
+    if(vEl) animNum(vEl,vids);
+  }).catch(function(){});
+})();
+// Feature cards 3D tilt
+document.querySelectorAll('.feature-card').forEach(function(card){
+  card.addEventListener('mousemove',function(e){
+    var r=card.getBoundingClientRect();
+    var x=(e.clientX-r.left)/r.width-.5;
+    var y=(e.clientY-r.top)/r.height-.5;
+    card.style.transform='translateY(-6px) rotateX('+(y*-8)+'deg) rotateY('+(x*8)+'deg)';
+  });
+  card.addEventListener('mouseleave',function(){
+    card.style.transform='';
+  });
+});
+</script>
+</body>
+</html>
