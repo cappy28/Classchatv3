@@ -1,0 +1,1596 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>CC Admin</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="CC Admin">
+<meta name="theme-color" content="#060410">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#060410;--s1:#0d0a20;--s2:#151030;--s3:#1e1845;
+  --border:#252050;--text:#ece8ff;--muted:#6860a0;--dim:#3a3468;
+  --red:#ff3d5a;--red2:#cc1f3a;
+  --purple:#9d6ef5;--purple2:#7c3aed;--purple3:#5b21b6;
+  --green:#00d68f;--yellow:#fbbf24;--blue:#38bdf8;--orange:#fb923c;
+  --font-head:'Syne',sans-serif;--font-body:'Inter',sans-serif;--font-mono:'DM Mono',monospace;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--font-body);overflow:hidden}
+
+/* ══ GRID NOISE BG ══ */
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:repeating-linear-gradient(0deg,rgba(157,110,245,.03) 0px,transparent 1px,transparent 40px),
+    repeating-linear-gradient(90deg,rgba(157,110,245,.03) 0px,transparent 1px,transparent 40px);
+}
+
+/* ══ LOGIN ══ */
+#loginScreen{
+  position:fixed;inset:0;z-index:200;background:var(--bg);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px;
+}
+#loginScreen.gone{display:none}
+.l-mark{
+  width:88px;height:88px;border-radius:28px;margin-bottom:22px;
+  background:linear-gradient(135deg,var(--red),#7c1d6f);
+  display:flex;align-items:center;justify-content:center;font-size:42px;
+  box-shadow:0 0 80px rgba(255,61,90,.3);
+  animation:pulse-glow 2.5s ease-in-out infinite;
+}
+@keyframes pulse-glow{0%,100%{box-shadow:0 0 60px rgba(255,61,90,.25)}50%{box-shadow:0 0 100px rgba(255,61,90,.5)}}
+.l-title{font-family:var(--font-head);font-size:28px;font-weight:900;color:#fff;letter-spacing:-.5px;margin-bottom:4px}
+.l-sub{font-size:12px;color:var(--muted);font-weight:600;letter-spacing:2px;text-transform:uppercase;margin-bottom:36px}
+.l-card{width:100%;max-width:300px;background:var(--s1);border-radius:20px;padding:22px;border:1px solid var(--border)}
+.l-label{font-family:var(--font-mono);font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px}
+.l-inp{
+  width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:12px;
+  color:#fff;font-size:20px;padding:13px 16px;letter-spacing:8px;text-align:center;
+  outline:none;-webkit-appearance:none;font-family:var(--font-mono);transition:border-color .2s
+}
+.l-inp:focus{border-color:var(--red)}
+.l-err{color:var(--red);font-size:12px;font-weight:600;text-align:center;min-height:18px;margin:8px 0}
+.l-btn{
+  width:100%;background:linear-gradient(135deg,var(--red),#8b1a4a);
+  border:none;border-radius:12px;color:#fff;font-size:14px;font-weight:700;
+  padding:15px;cursor:pointer;font-family:var(--font-head);letter-spacing:.5px;
+  transition:opacity .15s
+}
+.l-btn:active{opacity:.7}
+
+/* ══ APP ══ */
+#app{position:fixed;inset:0;z-index:1;display:none;flex-direction:column}
+#app.show{display:flex}
+
+/* ══ HEADER ══ */
+.hdr{
+  background:var(--s1);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;
+  padding:12px 16px;padding-top:calc(12px + env(safe-area-inset-top));
+  flex-shrink:0;position:relative;z-index:10;
+}
+.hdr-back{
+  width:34px;height:34px;border-radius:10px;background:var(--s2);border:1px solid var(--border);
+  display:none;align-items:center;justify-content:center;font-size:16px;cursor:pointer;
+  flex-shrink:0
+}
+.hdr-back.show{display:flex}
+.hdr-icon{font-size:22px;flex-shrink:0}
+.hdr-title{font-family:var(--font-head);font-size:17px;font-weight:800;color:#fff;flex:1;letter-spacing:-.3px}
+.hdr-pill{
+  background:rgba(255,61,90,.15);color:var(--red);
+  font-family:var(--font-mono);font-size:10px;font-weight:500;
+  border-radius:20px;padding:4px 10px;border:1px solid rgba(255,61,90,.25);letter-spacing:1px
+}
+
+/* ══ PAGES ══ */
+.pages{flex:1;overflow:hidden;position:relative;z-index:1}
+.page{
+  position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:14px 14px calc(70px + env(safe-area-inset-bottom));
+  display:none;background:var(--bg)
+}
+.page.active{display:block}
+
+/* ══ BOTTOM NAV ══ */
+.bnav{
+  background:var(--s1);border-top:1px solid var(--border);
+  display:flex;align-items:flex-start;padding:6px 0 0;
+  padding-bottom:env(safe-area-inset-bottom);
+  flex-shrink:0;position:relative;z-index:10
+}
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 2px;background:none;border:none;cursor:pointer}
+.nb-ico{font-size:20px;line-height:1;transition:transform .15s}
+.nb-lbl{font-size:8.5px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:.5px;font-family:var(--font-mono)}
+.nb.on .nb-ico{transform:scale(1.15)}
+.nb.on .nb-lbl{color:var(--red)}
+.nb-dot{width:5px;height:5px;border-radius:50%;background:var(--red);position:absolute;top:2px;right:8px;display:none}
+.nb-dot.show{display:block}
+
+/* ══ SECTION ══ */
+.sec{margin-bottom:20px}
+.sec-title{
+  font-family:var(--font-mono);font-size:10px;color:var(--muted);
+  letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;
+  display:flex;align-items:center;gap:6px
+}
+.sec-title::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* ══ CARDS ══ */
+.card{background:var(--s1);border-radius:16px;border:1px solid var(--border);padding:15px;margin-bottom:10px}
+.card-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.card-title{font-family:var(--font-head);font-size:14px;font-weight:800;color:#fff}
+.card-sub{font-size:12px;color:var(--muted);font-weight:500;margin-top:2px}
+
+/* ══ STAT GRID ══ */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+.stat{
+  background:var(--s1);border-radius:14px;border:1px solid var(--border);
+  padding:14px 12px;position:relative;overflow:hidden
+}
+.stat::before{content:'';position:absolute;top:-20px;right:-20px;width:60px;height:60px;border-radius:50%;opacity:.15;filter:blur(20px)}
+.stat.purple::before{background:var(--purple)}
+.stat.red::before{background:var(--red)}
+.stat.green::before{background:var(--green)}
+.stat.yellow::before{background:var(--yellow)}
+.stat.blue::before{background:var(--blue)}
+.stat-ico{font-size:22px;margin-bottom:8px;display:block}
+.stat-val{font-family:var(--font-head);font-size:26px;font-weight:900;margin-bottom:2px}
+.stat-lbl{font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+.stat.purple .stat-val{color:var(--purple)}
+.stat.red .stat-val{color:var(--red)}
+.stat.green .stat-val{color:var(--green)}
+.stat.yellow .stat-val{color:var(--yellow)}
+.stat.blue .stat-val{color:var(--blue)}
+
+/* ══ BUTTONS ══ */
+.btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  border:none;border-radius:12px;padding:13px 16px;font-size:13px;
+  font-weight:700;cursor:pointer;width:100%;margin-bottom:8px;
+  transition:opacity .15s;font-family:var(--font-body)
+}
+.btn:active{opacity:.65}
+.btn-red{background:linear-gradient(135deg,var(--red),var(--red2));color:#fff}
+.btn-green{background:linear-gradient(135deg,var(--green),#00a06e);color:#000}
+.btn-purple{background:linear-gradient(135deg,var(--purple),var(--purple2));color:#fff}
+.btn-yellow{background:linear-gradient(135deg,var(--yellow),#d97706);color:#000}
+.btn-blue{background:linear-gradient(135deg,var(--blue),#0284c7);color:#000}
+.btn-ghost{background:var(--s2);color:var(--text);border:1px solid var(--border)}
+.btn-danger{background:rgba(255,61,90,.1);color:var(--red);border:1px solid rgba(255,61,90,.25)}
+.btn:disabled{opacity:.35;cursor:default}
+.btn-sm{padding:8px 12px;font-size:12px;border-radius:10px;width:auto;margin-bottom:0}
+.btn-row{display:flex;gap:8px;margin-bottom:8px}
+
+/* ══ INPUTS ══ */
+.inp{
+  width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:11px;
+  color:#fff;font-size:14px;padding:11px 14px;outline:none;-webkit-appearance:none;
+  font-family:var(--font-body);transition:border-color .2s
+}
+.inp:focus{border-color:var(--purple)}
+textarea.inp{resize:none;line-height:1.5}
+.inp-lbl{font-family:var(--font-mono);font-size:10px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px;margin-top:12px;display:block}
+.inp-lbl:first-child{margin-top:0}
+.inp-hint{font-size:11px;color:var(--dim);font-weight:500;margin-top:5px}
+
+/* ══ TOGGLE ══ */
+.toggle-row{display:flex;align-items:center;gap:12px}
+.toggle-info{flex:1}
+.toggle-info h4{font-size:14px;font-weight:700;color:#fff}
+.toggle-info p{font-size:11px;color:var(--muted);margin-top:2px}
+.tgl{position:relative;width:50px;height:26px;flex-shrink:0}
+.tgl input{opacity:0;width:0;height:0;position:absolute}
+.tgl-sl{position:absolute;inset:0;background:var(--s3);border-radius:13px;cursor:pointer;transition:background .2s}
+.tgl input:checked~.tgl-sl{background:var(--green)}
+.tgl-sl::before{content:'';position:absolute;width:20px;height:20px;left:3px;top:3px;background:#fff;border-radius:10px;transition:transform .2s}
+.tgl input:checked~.tgl-sl::before{transform:translateX(24px)}
+
+/* ══ LIST ROWS ══ */
+.row{
+  display:flex;align-items:center;gap:10px;
+  background:var(--s1);border-radius:13px;border:1px solid var(--border);
+  padding:11px 12px;margin-bottom:7px
+}
+.row-avatar{
+  width:36px;height:36px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-head);font-weight:900;font-size:14px;color:#fff;flex-shrink:0
+}
+.row-info{flex:1;min-width:0}
+.row-name{font-size:13px;font-weight:700;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row-meta{font-size:11px;color:var(--muted);font-weight:500;margin-top:1px}
+.row-acts{display:flex;gap:5px;flex-shrink:0}
+.ico-btn{
+  width:34px;height:34px;border-radius:9px;border:1px solid;
+  display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;
+  transition:opacity .15s
+}
+.ico-btn:active{opacity:.6}
+.ico-r{background:rgba(255,61,90,.1);border-color:rgba(255,61,90,.25);color:var(--red)}
+.ico-y{background:rgba(251,191,36,.1);border-color:rgba(251,191,36,.25);color:var(--yellow)}
+.ico-b{background:rgba(56,189,248,.1);border-color:rgba(56,189,248,.25);color:var(--blue)}
+.ico-g{background:rgba(0,214,143,.1);border-color:rgba(0,214,143,.25);color:var(--green)}
+.ico-p{background:rgba(157,110,245,.1);border-color:rgba(157,110,245,.25);color:var(--purple)}
+
+/* ══ BADGE ══ */
+.badge{display:inline-flex;align-items:center;gap:4px;border-radius:20px;padding:3px 9px;font-size:11px;font-weight:700;border:1px solid}
+.badge-red{background:rgba(255,61,90,.1);color:var(--red);border-color:rgba(255,61,90,.25)}
+.badge-green{background:rgba(0,214,143,.1);color:var(--green);border-color:rgba(0,214,143,.25)}
+.badge-purple{background:rgba(157,110,245,.1);color:var(--purple);border-color:rgba(157,110,245,.25)}
+.badge-yellow{background:rgba(251,191,36,.1);color:var(--yellow);border-color:rgba(251,191,36,.25)}
+.badge-blue{background:rgba(56,189,248,.1);color:var(--blue);border-color:rgba(56,189,248,.25)}
+
+/* ══ SEARCH ══ */
+.search-wrap{position:relative;margin-bottom:12px}
+.search-ico{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;pointer-events:none;z-index:1}
+.search-inp{
+  width:100%;background:var(--s1);border:1px solid var(--border);border-radius:11px;
+  color:#fff;font-size:13px;padding:11px 12px 11px 36px;outline:none;-webkit-appearance:none;font-family:var(--font-body)
+}
+.search-inp:focus{border-color:var(--purple)}
+
+/* ══ PROGRESS ══ */
+.prog-card{background:var(--s1);border-radius:16px;border:1px solid var(--purple);padding:16px;margin-bottom:10px;display:none}
+.prog-card.show{display:block}
+.prog-status{font-size:13px;font-weight:700;color:var(--purple);margin-bottom:10px}
+.prog-track{background:var(--s2);border-radius:6px;height:8px;overflow:hidden;margin-bottom:6px}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--purple),var(--blue));border-radius:6px;transition:width .4s ease;width:0%}
+.prog-row{display:flex;justify-content:space-between;font-size:11px;font-weight:600}
+.prog-pct{color:var(--purple)}
+.prog-sz{color:var(--muted)}
+
+/* ══ VIDEO THUMB ══ */
+.vthumb{width:72px;height:46px;border-radius:8px;object-fit:cover;background:var(--s2);flex-shrink:0}
+.vthumb-ph{width:72px;height:46px;border-radius:8px;background:var(--s2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:20px}
+
+/* ══ PICKER ZONE ══ */
+.pick-zone{
+  background:var(--s1);border:1.5px dashed var(--border);border-radius:18px;
+  padding:26px 16px;text-align:center;cursor:pointer;margin-bottom:12px;
+  transition:all .2s;position:relative;overflow:hidden
+}
+.pick-zone.on{border-style:solid;border-color:var(--purple);background:rgba(157,110,245,.05)}
+.pick-zone:active{opacity:.7}
+.pick-ico{font-size:48px;margin-bottom:10px;display:block}
+.pick-title{font-size:14px;font-weight:700;color:#fff;margin-bottom:4px}
+.pick-sub{font-size:12px;color:var(--muted)}
+.pick-fname{font-size:12px;font-weight:700;color:var(--purple);margin-top:6px;word-break:break-all;font-family:var(--font-mono)}
+
+/* ══ DEST TABS ══ */
+.dest-tabs{display:flex;gap:7px;margin-bottom:14px}
+.dtab{
+  flex:1;background:var(--s1);border:1.5px solid var(--border);border-radius:14px;
+  padding:12px 6px;text-align:center;cursor:pointer;transition:all .18s
+}
+.dtab.on{background:var(--purple);border-color:var(--purple);box-shadow:0 4px 24px rgba(157,110,245,.35)}
+.dtab-ico{font-size:24px;margin-bottom:4px}
+.dtab-lbl{font-size:11px;font-weight:700;color:rgba(255,255,255,.5);font-family:var(--font-mono)}
+.dtab.on .dtab-lbl{color:#fff}
+
+/* ══ CHIPS ══ */
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chip{
+  background:var(--s2);border:1px solid var(--border);border-radius:20px;
+  padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s
+}
+.chip:active{background:var(--purple);border-color:var(--purple)}
+
+/* ══ DURATION GRID ══ */
+.dur-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:12px}
+.dur-btn{
+  background:var(--s2);border:1px solid var(--border);border-radius:10px;
+  padding:11px 6px;text-align:center;font-size:12px;font-weight:700;
+  cursor:pointer;transition:all .15s
+}
+.dur-btn:active{background:var(--red);border-color:var(--red)}
+
+/* ══ SHEET ══ */
+.sheet-ov{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;display:none;align-items:flex-end;backdrop-filter:blur(4px)}
+.sheet-ov.show{display:flex}
+.sheet{
+  background:var(--s1);border-radius:22px 22px 0 0;padding:20px;
+  padding-bottom:calc(20px + env(safe-area-inset-bottom));width:100%;
+  border-top:1px solid var(--border);max-height:80vh;overflow-y:auto
+}
+.sheet-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 18px}
+.sheet-title{font-family:var(--font-head);font-size:17px;font-weight:800;color:#fff;margin-bottom:6px}
+.sheet-msg{font-size:13px;color:var(--muted);font-weight:500;margin-bottom:18px;line-height:1.6}
+
+/* ══ REALTIME DOT ══ */
+.live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);animation:blink 1.4s infinite;margin-right:4px}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+
+/* ══ EMPTY / LOAD ══ */
+.empty{text-align:center;padding:40px 16px;color:var(--muted);font-size:13px;font-weight:600}
+.empty-ico{font-size:36px;margin-bottom:10px;display:block;opacity:.5}
+.ld{display:flex;align-items:center;justify-content:center;padding:40px;gap:10px;color:var(--muted);font-size:13px}
+.spin{width:20px;height:20px;border:2px solid var(--s3);border-top-color:var(--purple);border-radius:50%;animation:sp .7s linear infinite;flex-shrink:0}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* ══ TOAST ══ */
+#toast{
+  position:fixed;bottom:calc(72px + env(safe-area-inset-bottom));left:50%;
+  transform:translateX(-50%) translateY(16px);z-index:999;
+  border-radius:50px;padding:11px 20px;font-size:13px;font-weight:700;
+  box-shadow:0 8px 32px rgba(0,0,0,.5);opacity:0;transition:all .25s;
+  white-space:nowrap;pointer-events:none;font-family:var(--font-body)
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast.ok{background:var(--green);color:#000}
+#toast.err{background:var(--red);color:#fff}
+#toast.info{background:var(--purple);color:#fff}
+#toast.warn{background:var(--yellow);color:#000}
+
+/* ══ MONOSPACE VALUES ══ */
+.mono{font-family:var(--font-mono);font-size:12px}
+
+/* ══ QUICK ACTION GRID ══ */
+.qa-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.qa{
+  background:var(--s1);border-radius:14px;border:1px solid var(--border);
+  padding:14px 12px;cursor:pointer;transition:all .15s;position:relative;overflow:hidden
+}
+.qa:active{transform:scale(.96)}
+.qa-ico{font-size:26px;margin-bottom:8px;display:block}
+.qa-label{font-size:12px;font-weight:700;color:#fff;line-height:1.3}
+.qa-sub{font-size:11px;color:var(--muted);margin-top:3px}
+.qa.red{border-color:rgba(255,61,90,.25)}
+.qa.green{border-color:rgba(0,214,143,.25)}
+.qa.purple{border-color:rgba(157,110,245,.25)}
+.qa.yellow{border-color:rgba(251,191,36,.25)}
+</style>
+</head>
+<body>
+
+<!-- ══════════ LOGIN ══════════ -->
+<div id="loginScreen">
+  <div class="l-mark">🛡</div>
+  <div class="l-title">ClassChat Admin</div>
+  <div class="l-sub">Accès restreint</div>
+  <div class="l-card">
+    <div class="l-label">Code d'accès</div>
+    <input class="l-inp" id="codeInp" type="password" maxlength="20"
+      placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+    <div class="l-err" id="loginErr"></div>
+    <button class="l-btn" onclick="doLogin()">ENTRER →</button>
+  </div>
+</div>
+
+<!-- ══════════ APP ══════════ -->
+<div id="app">
+
+  <!-- Header -->
+  <div class="hdr">
+    <div class="hdr-back" id="hdrBack" onclick="navBack()">←</div>
+    <span class="hdr-icon" id="hdrIcon">📊</span>
+    <span class="hdr-title" id="hdrTitle">Dashboard</span>
+    <span class="hdr-pill">ADMIN</span>
+  </div>
+
+  <!-- Pages -->
+  <div class="pages">
+
+    <!-- ── DASHBOARD ── -->
+    <div class="page active" id="pgDash">
+      <div class="stat-grid" id="statsGrid">
+        <div style="grid-column:1/-1" class="ld"><div class="spin"></div> Chargement...</div>
+      </div>
+
+      <div class="sec">
+        <div class="sec-title">Actions rapides</div>
+        <div class="qa-grid">
+          <div class="qa red" onclick="navTo('site')">
+            <span class="qa-ico">⚡</span>
+            <div class="qa-label">Contrôle du site</div>
+            <div class="qa-sub">Ouvrir · Fermer</div>
+          </div>
+          <div class="qa purple" onclick="navTo('upload')">
+            <span class="qa-ico">📤</span>
+            <div class="qa-label">Publier vidéo</div>
+            <div class="qa-sub">Studio · Salle</div>
+          </div>
+          <div class="qa yellow" onclick="quickAnnounce()">
+            <span class="qa-ico">📢</span>
+            <div class="qa-label">Annonce globale</div>
+            <div class="qa-sub">Toutes les salles</div>
+          </div>
+          <div class="qa" style="background:linear-gradient(135deg,rgba(212,168,67,.15),rgba(212,168,67,.05));border-color:rgba(212,168,67,.3)" onclick="navTo('premium')">
+            <span class="qa-ico">👑</span>
+            <div class="qa-label">Codes Premium</div>
+            <div class="qa-sub">Générer · Gérer</div>
+          </div>
+          <div class="qa green" onclick="navTo('live')">
+            <span class="qa-ico">🔴</span>
+            <div class="qa-label">Utilisateurs live</div>
+            <div class="qa-sub">Connectés maintenant</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sec">
+        <div class="sec-title">Modules</div>
+        <div class="row" onclick="navTo('rooms')" style="cursor:pointer">
+          <span style="font-size:22px">🏠</span>
+          <div class="row-info"><div class="row-name">Gestion des salles</div><div class="row-meta">Supprimer · Bloquer · Inspecter</div></div>
+          <span style="color:var(--muted);font-size:16px">›</span>
+        </div>
+        <div class="row" onclick="navTo('users')" style="cursor:pointer">
+          <span style="font-size:22px">👤</span>
+          <div class="row-info"><div class="row-name">Utilisateurs</div><div class="row-meta">Bloquer · Supprimer messages</div></div>
+          <span style="color:var(--muted);font-size:16px">›</span>
+        </div>
+        <div class="row" onclick="navTo('messages')" style="cursor:pointer">
+          <span style="font-size:22px">💬</span>
+          <div class="row-info"><div class="row-name">Messages</div><div class="row-meta">Modérer · Supprimer</div></div>
+          <span style="color:var(--muted);font-size:16px">›</span>
+        </div>
+        <div class="row" onclick="navTo('studio')" style="cursor:pointer">
+          <span style="font-size:22px">🎬</span>
+          <div class="row-info"><div class="row-name">Studio vidéos</div><div class="row-meta">Gérer · Stats</div></div>
+          <span style="color:var(--muted);font-size:16px">›</span>
+        </div>
+        <div class="row" onclick="navTo('leaderboard')" style="cursor:pointer">
+          <span style="font-size:22px">🏆</span>
+          <div class="row-info"><div class="row-name">Leaderboard</div><div class="row-meta">Scores · Reset · Modifier</div></div>
+          <span style="color:var(--muted);font-size:16px">›</span>
+        </div>
+        <div class="row" onclick="navTo('mia')" style="cursor:pointer">
+          <span style="font-size:22px">🤖</span>
+          <div class="row-info"><div class="row-name">Questions Mia</div><div class="row-meta">Sans réponse · À améliorer</div></div>
+          <span style="color:var(--muted);font-size:16px">›</span>
+        </div>
+        <div class="row" onclick="navTo('reports')" style="cursor:pointer">
+          <span style="font-size:22px">🚨</span>
+          <div class="row-info"><div class="row-name">Signalements</div><div class="row-meta">Messages signalés par les users</div></div>
+          <span id="reportsBadge" style="color:var(--muted);font-size:16px">›</span>
+        </div>
+      </div>
+
+      <button class="btn btn-ghost" onclick="doLogout()" style="margin-top:4px">🚪 Déconnexion</button>
+    </div>
+
+    <!-- ── SITE CONTROL ── -->
+    <div class="page" id="pgSite">
+      <div id="siteStatusDiv" class="ld"><div class="spin"></div></div>
+      <div id="siteContent" style="display:none">
+        <div class="card" style="margin-bottom:10px">
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <h4>Site ouvert</h4>
+              <p>Si désactivé, les users voient un écran de maintenance</p>
+            </div>
+            <label class="tgl">
+              <input type="checkbox" id="siteTgl" onchange="toggleSite(this.checked)">
+              <span class="tgl-sl"></span>
+            </label>
+          </div>
+        </div>
+        <div class="card">
+          <label class="inp-lbl">Message de fermeture</label>
+          <textarea class="inp" id="closeMsg" rows="2">Le site est temporairement fermé. Reviens bientôt !</textarea>
+          <button class="btn btn-ghost" style="margin-top:10px" onclick="saveCloseMsg()">💾 Sauvegarder</button>
+        </div>
+      </div>
+
+      <div class="sec"><div class="sec-title">Annonce globale</div></div>
+      <div class="card">
+        <div class="card-sub">Envoyé dans toutes les salles actives</div>
+        <textarea class="inp" id="announceInp" rows="3" placeholder="Ton message ici..."></textarea>
+        <button class="btn btn-yellow" style="margin-top:10px" onclick="sendAnnounce()">📢 Envoyer à tous</button>
+      </div>
+
+      <div class="sec"><div class="sec-title" style="color:var(--red)">Zone danger</div></div>
+      <button class="btn btn-danger" onclick="confirmDeleteAllMsgs()">🗑 Vider tous les messages</button>
+    </div>
+
+    <!-- ── LIVE USERS ── -->
+    <div class="page" id="pgLive">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+        <span class="live-dot"></span>
+        <span style="font-size:13px;font-weight:700;color:var(--green)">Actif maintenant</span>
+        <span style="font-size:12px;color:var(--muted)" id="liveCount">—</span>
+      </div>
+      <div id="liveList" class="ld"><div class="spin"></div></div>
+    </div>
+
+    <!-- ── ROOMS ── -->
+    <div class="page" id="pgRooms">
+      <div class="search-wrap">
+        <span class="search-ico">🔍</span>
+        <input class="search-inp" id="roomSearch" placeholder="Chercher une salle..." oninput="filterRooms(this.value)">
+      </div>
+      <div id="roomsList" class="ld"><div class="spin"></div></div>
+    </div>
+
+    <!-- ── USERS ── -->
+    <div class="page" id="pgUsers">
+      <div class="search-wrap">
+        <span class="search-ico">🔍</span>
+        <input class="search-inp" id="userSearch" placeholder="Chercher un utilisateur..." oninput="filterUsers(this.value)">
+      </div>
+      <div id="usersList" class="ld"><div class="spin"></div></div>
+    </div>
+
+    <!-- ── MESSAGES ── -->
+    <div class="page" id="pgMessages">
+      <div class="search-wrap">
+        <span class="search-ico">🔍</span>
+        <input class="search-inp" id="msgSearch" placeholder="Contenu, auteur, salle..." oninput="filterMsgs(this.value)">
+      </div>
+      <div id="msgsList" class="ld"><div class="spin"></div></div>
+    </div>
+
+    <!-- ── STUDIO ── -->
+    <div class="page" id="pgStudio">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <span id="studioCount" style="font-size:12px;color:var(--muted);font-family:var(--font-mono)"></span>
+      </div>
+      <div id="studioList" class="ld"><div class="spin"></div></div>
+    </div>
+
+    <!-- ── UPLOAD ── -->
+    <div class="page" id="pgUpload">
+      <div class="dest-tabs">
+        <div class="dtab on" id="dtStudio" onclick="setDest('studio')">
+          <div class="dtab-ico">🎬</div><div class="dtab-lbl">Studio</div>
+        </div>
+        <div class="dtab" id="dtRoom" onclick="setDest('room')">
+          <div class="dtab-ico">💬</div><div class="dtab-lbl">Salle</div>
+        </div>
+      </div>
+
+      <div class="pick-zone" id="pickZone" onclick="document.getElementById('fileInp').click()">
+        <input type="file" id="fileInp" accept="video/*" onchange="onFile(this)" style="position:absolute;inset:0;opacity:0;cursor:pointer;font-size:0">
+        <span class="pick-ico" id="pickIco">🎥</span>
+        <div class="pick-title" id="pickTitle">Appuie pour choisir</div>
+        <div class="pick-sub" id="pickSub">MP4, MOV depuis ta galerie</div>
+        <div class="pick-fname" id="pickName"></div>
+      </div>
+
+      <div class="card">
+        <label class="inp-lbl">Titre *</label>
+        <input class="inp" id="upTitle" placeholder="Titre de la vidéo...">
+        <label class="inp-lbl">Description</label>
+        <textarea class="inp" id="upDesc" rows="2" placeholder="Description..."></textarea>
+        <div id="roomField" style="display:none">
+          <label class="inp-lbl">Code de la salle *</label>
+          <input class="inp" id="upRoom" placeholder="ex: 406" autocapitalize="none" autocorrect="off">
+          <div class="chips" id="recentRoomsChips"></div>
+        </div>
+      </div>
+
+      <div class="prog-card" id="progCard">
+        <div class="prog-status" id="progStatus">Préparation...</div>
+        <div class="prog-track"><div class="prog-fill" id="progFill"></div></div>
+        <div class="prog-row"><span class="prog-pct" id="progPct">0%</span><span class="prog-sz" id="progSz"></span></div>
+      </div>
+
+      <button class="btn btn-purple" id="pubBtn" onclick="doPublish()">🚀 Publier</button>
+
+      <div class="sec"><div class="sec-title">Dernières publications</div></div>
+      <div id="uploadHistory"></div>
+    </div>
+
+    <!-- ── LEADERBOARD ── -->
+    <div class="page" id="pgLeaderboard">
+      <div class="btn-row">
+        <button class="btn btn-danger btn-sm" onclick="resetLeaderboard()">🔄 Reset total</button>
+        <button class="btn btn-ghost btn-sm" onclick="loadLeaderboard()">↻ Actualiser</button>
+      </div>
+      <div id="lbList" class="ld"><div class="spin"></div></div>
+    </div>
+
+    <!-- ── MIA QUESTIONS ── -->
+    <div class="page" id="pgMia">
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-title">🤖 Questions sans réponse</div>
+        <div class="card-sub">Les questions où Mia n'a pas su répondre correctement</div>
+      </div>
+      <div id="miaList" class="ld"><div class="spin"></div></div>
+    </div>
+
+    <!-- ── REPORTS ── -->
+    <div class="page" id="pgReports">
+      <div id="reportsList" class="ld"><div class="spin"></div></div>
+    </div>
+
+
+    <!-- ── PREMIUM ── -->
+    <div class="page" id="pgPremium">
+
+      <!-- Génération de codes -->
+      <div class="sec">
+        <div class="sec-title">🎲 Générer des codes</div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+          <!-- Formule -->
+          <div>
+            <div style="font-size:10px;font-weight:800;color:var(--muted);letter-spacing:1px;margin-bottom:6px">FORMULE</div>
+            <select id="genPlan" style="width:100%;padding:10px;border-radius:10px;background:var(--s2);border:1px solid var(--border);color:var(--text);font-size:13px;font-family:inherit">
+              <option value="flash">⚡ Flash — 1€ (24h)</option>
+              <option value="week">📅 Semaine — 5€ (7j)</option>
+              <option value="month" selected>🌙 Mensuel — 10€ (30j)</option>
+              <option value="quarter">💎 Trimestre — 15€ (3 mois)</option>
+              <option value="half">👑 Semestre — 25€ (6 mois)</option>
+            </select>
+          </div>
+          <!-- Quantité -->
+          <div>
+            <div style="font-size:10px;font-weight:800;color:var(--muted);letter-spacing:1px;margin-bottom:6px">QUANTITÉ</div>
+            <select id="genQty" style="width:100%;padding:10px;border-radius:10px;background:var(--s2);border:1px solid var(--border);color:var(--text);font-size:13px;font-family:inherit">
+              <option value="1">1 code</option>
+              <option value="5">5 codes</option>
+              <option value="10" selected>10 codes</option>
+              <option value="20">20 codes</option>
+              <option value="50">50 codes</option>
+            </select>
+          </div>
+        </div>
+
+        <button onclick="generateCodes()" style="width:100%;padding:13px;border-radius:12px;background:linear-gradient(110deg,#7a5520,#d4a843);border:none;color:#07060c;font-family:inherit;font-size:14px;font-weight:900;cursor:pointer;margin-bottom:12px">
+          🎲 Générer les codes
+        </button>
+
+        <!-- Zone résultat -->
+        <div id="genResult" style="display:none">
+          <div style="font-size:10px;font-weight:800;color:var(--muted);letter-spacing:1px;margin-bottom:8px">CODES GÉNÉRÉS</div>
+          <div id="genCodesList" style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px"></div>
+          <div style="display:flex;gap:8px">
+            <button onclick="copyAllCodes()" style="flex:1;padding:10px;border-radius:10px;background:rgba(212,168,67,.15);border:1px solid rgba(212,168,67,.3);color:#d4a843;font-family:inherit;font-size:12px;font-weight:800;cursor:pointer">📋 Copier tout</button>
+            <button onclick="printCodes()" style="flex:1;padding:10px;border-radius:10px;background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:12px;font-weight:800;cursor:pointer">🖨️ Imprimer cartes</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats Premium -->
+      <div class="sec">
+        <div class="sec-title">📊 Statistiques</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
+          <div style="background:var(--s2);border-radius:12px;padding:12px;text-align:center;border:1px solid var(--border)">
+            <div style="font-size:22px;font-weight:900;color:#d4a843" id="statCodesTotal">—</div>
+            <div style="font-size:9px;color:var(--muted);font-weight:700;margin-top:2px">CODES TOTAL</div>
+          </div>
+          <div style="background:var(--s2);border-radius:12px;padding:12px;text-align:center;border:1px solid var(--border)">
+            <div style="font-size:22px;font-weight:900;color:#22c55e" id="statCodesUsed">—</div>
+            <div style="font-size:9px;color:var(--muted);font-weight:700;margin-top:2px">UTILISÉS</div>
+          </div>
+          <div style="background:var(--s2);border-radius:12px;padding:12px;text-align:center;border:1px solid var(--border)">
+            <div style="font-size:22px;font-weight:900;color:#a78bfa" id="statPremUsers">—</div>
+            <div style="font-size:9px;color:var(--muted);font-weight:700;margin-top:2px">MEMBRES</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Liste des codes -->
+      <div class="sec">
+        <div class="sec-title" style="display:flex;align-items:center;justify-content:space-between">
+          <span>🗝️ Tous les codes</span>
+          <div style="display:flex;gap:6px">
+            <button onclick="loadCodes('all')" id="filterAll" style="padding:4px 10px;border-radius:8px;background:rgba(212,168,67,.2);border:1px solid rgba(212,168,67,.4);color:#d4a843;font-size:10px;font-weight:800;cursor:pointer;font-family:inherit">Tous</button>
+            <button onclick="loadCodes('free')" id="filterFree" style="padding:4px 10px;border-radius:8px;background:var(--s2);border:1px solid var(--border);color:var(--muted);font-size:10px;font-weight:800;cursor:pointer;font-family:inherit">Dispo</button>
+            <button onclick="loadCodes('used')" id="filterUsed" style="padding:4px 10px;border-radius:8px;background:var(--s2);border:1px solid var(--border);color:var(--muted);font-size:10px;font-weight:800;cursor:pointer;font-family:inherit">Utilisés</button>
+          </div>
+        </div>
+        <div id="codesList" style="display:flex;flex-direction:column;gap:6px;margin-top:10px">
+          <div class="ld"><div class="spin"></div></div>
+        </div>
+      </div>
+
+      <!-- Demandes en attente -->
+      <div class="sec">
+        <div class="sec-title">📬 Demandes en attente</div>
+        <div id="requestsList" style="display:flex;flex-direction:column;gap:8px">
+          <div class="ld"><div class="spin"></div></div>
+        </div>
+      </div>
+
+    </div><!-- /pgPremium -->
+
+  </div><!-- /pages -->
+
+  <!-- Bottom Nav -->
+  <div class="bnav">
+    <button class="nb on" id="nb-dash" onclick="navTo('dash')">
+      <span class="nb-ico">📊</span><span class="nb-lbl">Stats</span>
+    </button>
+    <button class="nb" id="nb-site" onclick="navTo('site')">
+      <span class="nb-ico">⚡</span><span class="nb-lbl">Site</span>
+    </button>
+    <button class="nb" id="nb-upload" onclick="navTo('upload')">
+      <span class="nb-ico">📤</span><span class="nb-lbl">Upload</span>
+    </button>
+    <button class="nb" id="nb-users" onclick="navTo('users')">
+      <span class="nb-ico">👤</span><span class="nb-lbl">Users</span>
+    </button>
+    <button class="nb" id="nb-studio" onclick="navTo('studio')">
+      <span class="nb-ico">🎬</span><span class="nb-lbl">Studio</span>
+    </button>
+  </div>
+
+</div><!-- /app -->
+
+<!-- SHEET -->
+<div class="sheet-ov" id="sheetOv" onclick="closeSheet()">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="sheetTitle"></div>
+    <div class="sheet-msg" id="sheetMsg"></div>
+    <div id="sheetBody"></div>
+  </div>
+</div>
+
+<!-- BLOCK SHEET -->
+<div class="sheet-ov" id="blockOv" onclick="closeBlockSheet()">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">🚫 Durée du blocage</div>
+    <div class="sheet-msg" id="blockTarget"></div>
+    <div class="dur-grid" id="durGrid"></div>
+    <button class="btn btn-ghost" onclick="closeBlockSheet()">Annuler</button>
+  </div>
+</div>
+
+<div id="toast">    <button class="nb" id="nb-premium" onclick="navTo('premium')">
+      <span class="nb-ico">👑</span><span class="nb-lbl">Premium</span>
+    </button>
+  </div>
+
+<script>
+var SB_URL='https://ersxfcqumaftjucrqjwj.supabase.co';
+var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVyc3hmY3F1bWFmdGp1Y3JxandqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2NDg3NDIsImV4cCI6MjA4ODIyNDc0Mn0.CO_x6t-VyoZ9q2lMRMI7JFuBdTZl_axGpgLcB6POFTE';
+var ADMIN_CODE='lucasvyp6';
+var CLOUD='dukta92ij';
+var PRESET='zidqpynw';
+var CTRL='__ADMIN_CTRL__';
+var SB=supabase.createClient(SB_URL,SB_KEY);
+
+// ══ STATE ══
+var _page='dash';
+var _dest='studio';
+var _file=null;
+var _blockMeta={};
+var _allRooms=[];
+var _allUsers=[];
+var _allMsgs=[];
+
+var PAGE_MAP={
+  dash:{id:'pgDash',icon:'📊',title:'Dashboard',nb:'nb-dash'},
+  site:{id:'pgSite',icon:'⚡',title:'Contrôle Site',nb:'nb-site'},
+  live:{id:'pgLive',icon:'🔴',title:'Utilisateurs live',nb:null},
+  rooms:{id:'pgRooms',icon:'🏠',title:'Salles',nb:null},
+  users:{id:'pgUsers',icon:'👤',title:'Utilisateurs',nb:'nb-users'},
+  messages:{id:'pgMessages',icon:'💬',title:'Messages',nb:null},
+  studio:{id:'pgStudio',icon:'🎬',title:'Studio',nb:'nb-studio'},
+  upload:{id:'pgUpload',icon:'📤',title:'Publier une vidéo',nb:'nb-upload'},
+  leaderboard:{id:'pgLeaderboard',icon:'🏆',title:'Leaderboard',nb:null},
+  mia:{id:'pgMia',icon:'🤖',title:'Questions Mia',nb:null},
+  reports:{id:'pgReports',icon:'🚨',title:'Signalements',nb:null},
+  premium:{id:'pgPremium',icon:'👑',title:'Codes Premium',nb:'nb-premium'},
+};
+var NAV_PAGES=['dash','site','upload','users','studio','premium'];
+
+// ══ LOGIN ══
+function doLogin(){
+  var v=(document.getElementById('codeInp').value||'').trim();
+  if(v===ADMIN_CODE){
+    document.getElementById('loginScreen').classList.add('gone');
+    document.getElementById('app').classList.add('show');
+    loadDash();loadRecentRooms();loadUploadHistory();
+  } else {
+    document.getElementById('loginErr').textContent='Code incorrect';
+    document.getElementById('codeInp').value='';
+    setTimeout(function(){document.getElementById('loginErr').textContent='';},2000);
+  }
+}
+function doLogout(){
+  document.getElementById('loginScreen').classList.remove('gone');
+  document.getElementById('app').classList.remove('show');
+  document.getElementById('codeInp').value='';
+}
+
+// ══ NAV ══
+function navTo(p){
+  if(_page===p) return;
+  var prev=PAGE_MAP[_page];
+  var next=PAGE_MAP[p];
+  document.getElementById(prev.id).classList.remove('active');
+  if(prev.nb) document.getElementById(prev.nb).classList.remove('on');
+  _page=p;
+  document.getElementById(next.id).classList.add('active');
+  if(next.nb) document.getElementById(next.nb).classList.add('on');
+  document.getElementById('hdrIcon').textContent=next.icon;
+  document.getElementById('hdrTitle').textContent=next.title;
+  var isNav=NAV_PAGES.includes(p);
+  var back=document.getElementById('hdrBack');
+  back.classList.toggle('show',!isNav);
+  if(p==='dash') loadDash();
+  else if(p==='site') loadSite();
+  else if(p==='live') loadLive();
+  else if(p==='rooms') loadRooms();
+  else if(p==='users') loadUsers();
+  else if(p==='messages') loadMsgs();
+  else if(p==='studio') loadStudio();
+  else if(p==='leaderboard') loadLeaderboard();
+  else if(p==='mia') loadMia();
+  else if(p==='reports') loadReports();
+  else if(p==='upload') {/* already loaded */}
+}
+function navBack(){
+  navTo('dash');
+}
+
+// ══ TOAST ══
+var _tt;
+function toast(msg,type){
+  var el=document.getElementById('toast');
+  el.textContent=msg;el.className='';el.offsetWidth;
+  el.classList.add('show',type||'info');
+  clearTimeout(_tt);_tt=setTimeout(function(){el.classList.remove('show');},3000);
+}
+
+// ══ SHEET ══
+function showSheet(title,msg,bodyHtml,btns){
+  document.getElementById('sheetTitle').textContent=title;
+  document.getElementById('sheetMsg').textContent=msg;
+  var body=document.getElementById('sheetBody');
+  body.innerHTML=bodyHtml||'';
+  if(btns){
+    btns.forEach(function(b){
+      var btn=document.createElement('button');
+      btn.className='btn '+(b.cls||'btn-ghost');btn.textContent=b.label;
+      btn.onclick=function(){closeSheet();b.fn();};
+      body.appendChild(btn);
+    });
+  }
+  document.getElementById('sheetOv').classList.add('show');
+}
+function closeSheet(){document.getElementById('sheetOv').classList.remove('show');}
+
+// ══ DASHBOARD ══
+async function loadDash(){
+  var g=document.getElementById('statsGrid');
+  g.innerHTML='<div style="grid-column:1/-1" class="ld"><div class="spin"></div></div>';
+  try{
+    var [rr,mm,vv]=await Promise.all([
+      SB.from('messages').select('room_code').not('room_code','like','DM_%').not('room_code','like','__ADMIN%').limit(500),
+      SB.from('messages').select('*',{count:'exact',head:true}),
+      SB.from('studio_videos').select('*',{count:'exact',head:true}),
+    ]);
+    var seenR=new Set();(rr.data||[]).forEach(function(x){seenR.add(x.room_code);});
+    var cutoff=new Date(Date.now()-7*24*60*60*1000).toISOString();
+    var uu=await SB.from('messages').select('author').neq('type','system').gte('created_at',cutoff).limit(1000);
+    var seenU=new Set();(uu.data||[]).forEach(function(x){if(x.author&&x.author!=='ADMIN')seenU.add(x.author);});
+    var stats=[
+      {ico:'🏠',val:seenR.size,lbl:'Salles',cls:'purple'},
+      {ico:'💬',val:(mm.count||0).toLocaleString(),lbl:'Messages',cls:'blue'},
+      {ico:'👤',val:seenU.size,lbl:'Users (7j)',cls:'green'},
+      {ico:'🎬',val:vv.count||0,lbl:'Vidéos',cls:'yellow'},
+    ];
+    g.innerHTML=stats.map(function(s){
+      return '<div class="stat '+s.cls+'"><span class="stat-ico">'+s.ico+'</span><div class="stat-val">'+s.val+'</div><div class="stat-lbl">'+s.lbl+'</div></div>';
+    }).join('');
+  }catch(e){g.innerHTML='<div class="empty">❌ Erreur</div>';}
+}
+
+// ══ SITE CONTROL ══
+async function loadSite(){
+  document.getElementById('siteContent').style.display='none';
+  document.getElementById('siteStatusDiv').innerHTML='<div class="ld"><div class="spin"></div></div>';
+  var {data}=await SB.from('messages').select('content').eq('room_code',CTRL).eq('type','system').order('created_at',{ascending:false}).limit(1);
+  var last=data&&data[0]?data[0].content:'';
+  var closed=last.startsWith('SITE_CLOSED|');
+  var msg=closed?last.slice('SITE_CLOSED|'.length):'Le site est temporairement fermé. Reviens bientôt !';
+  document.getElementById('siteStatusDiv').innerHTML=
+    '<div class="badge '+(closed?'badge-red':'badge-green')+'" style="margin-bottom:14px">'+
+    (closed?'🔴 Site FERMÉ':'🟢 Site OUVERT')+'</div>';
+  document.getElementById('siteTgl').checked=!closed;
+  document.getElementById('closeMsg').value=msg;
+  document.getElementById('siteContent').style.display='block';
+}
+async function toggleSite(open){
+  var msg=document.getElementById('closeMsg').value||'Le site est temporairement fermé.';
+  var content=open?'SITE_OPEN':('SITE_CLOSED|'+msg);
+  var {error}=await SB.from('messages').insert({room_code:CTRL,type:'system',author:'ADMIN',content:content});
+  if(error){toast('Erreur','err');return;}
+  document.getElementById('siteStatusDiv').innerHTML=
+    '<div class="badge '+(open?'badge-green':'badge-red')+'" style="margin-bottom:14px">'+
+    (open?'🟢 Site OUVERT':'🔴 Site FERMÉ')+'</div>';
+  toast(open?'✅ Site rouvert !':'🔴 Site fermé !',open?'ok':'err');
+}
+async function saveCloseMsg(){
+  var msg=document.getElementById('closeMsg').value;
+  if(document.getElementById('siteTgl').checked===false){
+    await SB.from('messages').insert({room_code:CTRL,type:'system',author:'ADMIN',content:'SITE_CLOSED|'+msg});
+  }
+  toast('💾 Message sauvegardé','ok');
+}
+async function sendAnnounce(){
+  var text=(document.getElementById('announceInp').value||'').trim();
+  if(!text){toast('Écris un message','warn');return;}
+  showSheet('📢 Envoyer cette annonce ?',text,'',
+    [{label:'📢 Envoyer à tous',cls:'btn-yellow',fn:async function(){
+      var {data}=await SB.from('messages').select('room_code').not('room_code','like','DM_%').not('room_code','like','__ADMIN%').limit(500);
+      var seen=new Set();(data||[]).forEach(function(r){seen.add(r.room_code);});
+      var rooms=[...seen];
+      await Promise.all(rooms.map(function(rc){
+        return SB.from('messages').insert({room_code:rc,type:'system',author:'ADMIN',content:'📢 '+text});
+      }));
+      toast('✅ Envoyé dans '+rooms.length+' salles','ok');
+      document.getElementById('announceInp').value='';
+    }},
+    {label:'Annuler',cls:'btn-ghost',fn:function(){}}]
+  );
+}
+function quickAnnounce(){navTo('site');setTimeout(function(){document.getElementById('announceInp').focus();},300);}
+function confirmDeleteAllMsgs(){
+  showSheet('⚠️ Vider TOUS les messages ?','Action irréversible. Tous les messages de toutes les salles seront effacés.','',
+    [{label:'🗑 Confirmer la suppression',cls:'btn-danger',fn:async function(){
+      await SB.from('messages').delete().not('room_code','eq',CTRL);
+      toast('✅ Tout supprimé','ok');
+    }},
+    {label:'Annuler',cls:'btn-ghost',fn:function(){}}]
+  );
+}
+
+// ══ LIVE USERS ══
+async function loadLive(){
+  var el=document.getElementById('liveList');
+  el.innerHTML='<div class="ld"><div class="spin"></div></div>';
+  // On simule le live en cherchant les messages des 5 dernières minutes
+  var cutoff=new Date(Date.now()-5*60*1000).toISOString();
+  var {data}=await SB.from('messages').select('author,room_code,created_at').neq('type','system').gte('created_at',cutoff).order('created_at',{ascending:false}).limit(200);
+  var seen=new Map();
+  (data||[]).forEach(function(r){if(r.author&&r.author!=='ADMIN'&&!seen.has(r.author))seen.set(r.author,r);});
+  var list=[...seen.values()];
+  document.getElementById('liveCount').textContent=list.length+' dans les 5 dernières min';
+  if(!list.length){el.innerHTML='<div class="empty"><span class="empty-ico">😴</span>Personne en ce moment</div>';return;}
+  el.innerHTML=list.map(function(u){
+    var color=strColor(u.author);
+    return '<div class="row">'+
+      '<div class="row-avatar" style="background:'+color+'">'+u.author[0].toUpperCase()+'</div>'+
+      '<div class="row-info"><div class="row-name">'+esc(u.author)+'</div>'+
+      '<div class="row-meta">dans #'+esc(u.room_code)+' · '+ago(u.created_at)+'</div></div>'+
+      '<div class="row-acts">'+
+        '<button class="ico-btn ico-y" onclick="blockSheet(\''+esc(u.author)+'\',\'user\')">🚫</button>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+// ══ ROOMS ══
+async function loadRooms(){
+  var el=document.getElementById('roomsList');
+  el.innerHTML='<div class="ld"><div class="spin"></div></div>';
+  var {data}=await SB.from('messages').select('room_code,created_at').not('room_code','like','DM_%').not('room_code','like','__ADMIN%').not('room_code','like','%_p4').order('created_at',{ascending:false}).limit(500);
+  var seen=new Map();(data||[]).forEach(function(r){if(!seen.has(r.room_code))seen.set(r.room_code,r.created_at);});
+  _allRooms=[...seen.entries()].map(function(e){return{code:e[0],ts:e[1]};});
+  renderRooms(_allRooms);
+}
+function filterRooms(q){renderRooms(q?_allRooms.filter(function(r){return r.code.toLowerCase().includes(q.toLowerCase());}):_allRooms);}
+function renderRooms(list){
+  var el=document.getElementById('roomsList');
+  if(!list.length){el.innerHTML='<div class="empty"><span class="empty-ico">🏠</span>Aucune salle</div>';return;}
+  el.innerHTML=list.map(function(r){
+    return '<div class="row">'+
+      '<span style="font-size:22px">🏠</span>'+
+      '<div class="row-info"><div class="row-name mono">'+esc(r.code)+'</div><div class="row-meta">'+ago(r.ts)+'</div></div>'+
+      '<div class="row-acts">'+
+        '<button class="ico-btn ico-b" onclick="inspectRoom(\''+esc(r.code)+'\')">👁</button>'+
+        '<button class="ico-btn ico-y" onclick="blockSheet(\''+esc(r.code)+'\',\'room\')">🚫</button>'+
+        '<button class="ico-btn ico-r" onclick="deleteRoom(\''+esc(r.code)+'\')">🗑</button>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+async function inspectRoom(code){
+  var {data}=await SB.from('messages').select('author,content,created_at').eq('room_code',code).neq('type','system').order('created_at',{ascending:false}).limit(8);
+  var preview=(data||[]).map(function(m){return '<div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--purple);font-weight:700">'+esc(m.author)+'</span><br>'+esc((m.content||'📎').slice(0,80))+'</div>';}).join('');
+  showSheet('🏠 '+code,'Derniers messages :',preview||'<div class="empty">Vide</div>',
+    [{label:'🗑 Supprimer la salle',cls:'btn-danger',fn:function(){deleteRoom(code);}},
+     {label:'Fermer',cls:'btn-ghost',fn:function(){}}]
+  );
+}
+function deleteRoom(code){
+  showSheet('🗑 Supprimer "'+code+'" ?','Tous les messages seront effacés.','',
+    [{label:'🗑 Supprimer',cls:'btn-danger',fn:async function(){
+      await SB.from('messages').delete().eq('room_code',code);
+      toast('✅ Salle supprimée','ok');loadRooms();
+    }},{label:'Annuler',cls:'btn-ghost',fn:function(){}}]
+  );
+}
+
+// ══ USERS ══
+async function loadUsers(){
+  var el=document.getElementById('usersList');
+  el.innerHTML='<div class="ld"><div class="spin"></div></div>';
+  var cutoff=new Date(Date.now()-7*24*60*60*1000).toISOString();
+  var {data}=await SB.from('messages').select('author,created_at').neq('type','system').gte('created_at',cutoff).order('created_at',{ascending:false}).limit(1000);
+  var seen=new Map();(data||[]).forEach(function(r){if(r.author&&r.author!=='ADMIN'&&!seen.has(r.author))seen.set(r.author,r.created_at);});
+  _allUsers=[...seen.entries()].map(function(e){return{pseudo:e[0],ts:e[1]};});
+  renderUsers(_allUsers);
+}
+function filterUsers(q){renderUsers(q?_allUsers.filter(function(u){return u.pseudo.toLowerCase().includes(q.toLowerCase());}):_allUsers);}
+function renderUsers(list){
+  var el=document.getElementById('usersList');
+  if(!list.length){el.innerHTML='<div class="empty"><span class="empty-ico">👤</span>Aucun utilisateur</div>';return;}
+  el.innerHTML='<div style="font-size:12px;color:var(--muted);margin-bottom:10px;font-family:var(--font-mono)">'+list.length+' utilisateur(s) · 7 derniers jours</div>'+
+    list.map(function(u){
+      var color=strColor(u.pseudo);
+      return '<div class="row">'+
+        '<div class="row-avatar" style="background:'+color+'">'+u.pseudo[0].toUpperCase()+'</div>'+
+        '<div class="row-info"><div class="row-name">'+esc(u.pseudo)+'</div><div class="row-meta">'+ago(u.ts)+'</div></div>'+
+        '<div class="row-acts">'+
+          '<button class="ico-btn ico-b" onclick="userProfile(\''+esc(u.pseudo)+'\')">📋</button>'+
+          '<button class="ico-btn ico-y" onclick="blockSheet(\''+esc(u.pseudo)+'\',\'user\')">🚫</button>'+
+          '<button class="ico-btn ico-r" onclick="deleteUserMsgs(\''+esc(u.pseudo)+'\')">🗑</button>'+
+        '</div>'+
+      '</div>';
+    }).join('');
+}
+async function userProfile(pseudo){
+  var [msgs,drops]=await Promise.all([
+    SB.from('messages').select('room_code,content,created_at').eq('author',pseudo).neq('type','system').order('created_at',{ascending:false}).limit(5),
+    SB.from('user_drops').select('streak,total_days').eq('pseudo',pseudo).single(),
+  ]);
+  var streak=drops.data?drops.data.streak:0;
+  var total=drops.data?drops.data.total_days:0;
+  var preview=(msgs.data||[]).map(function(m){return '<div style="padding:7px 0;border-bottom:1px solid var(--border);font-size:12px"><span class="mono" style="color:var(--muted)">#'+esc(m.room_code)+'</span><br>'+esc((m.content||'📎').slice(0,80))+'</div>';}).join('');
+  showSheet('👤 '+pseudo,
+    '🔥 '+streak+' jours de suite · 💧 '+total+' jours total\n',
+    preview||'<div class="empty">Pas de messages récents</div>',
+    [{label:'🗑 Supprimer ses messages',cls:'btn-danger',fn:function(){deleteUserMsgs(pseudo);}},
+     {label:'🚫 Bloquer',cls:'btn-ghost',fn:function(){closeSheet();blockSheet(pseudo,'user');}},
+     {label:'Fermer',cls:'btn-ghost',fn:function(){}}]
+  );
+}
+function deleteUserMsgs(pseudo){
+  showSheet('🗑 Messages de '+pseudo,'Tous ses messages seront effacés.','',
+    [{label:'🗑 Supprimer',cls:'btn-danger',fn:async function(){
+      await SB.from('messages').delete().eq('author',pseudo).neq('type','system');
+      toast('✅ Messages supprimés','ok');loadUsers();
+    }},{label:'Annuler',cls:'btn-ghost',fn:function(){}}]
+  );
+}
+
+// ══ MESSAGES ══
+async function loadMsgs(){
+  var el=document.getElementById('msgsList');
+  el.innerHTML='<div class="ld"><div class="spin"></div></div>';
+  var {data}=await SB.from('messages').select('id,room_code,author,content,created_at,type').neq('type','system').not('room_code','like','__ADMIN%').order('created_at',{ascending:false}).limit(300);
+  _allMsgs=data||[];
+  renderMsgs(_allMsgs);
+}
+function filterMsgs(q){
+  renderMsgs(q?_allMsgs.filter(function(m){
+    return (m.content||'').toLowerCase().includes(q.toLowerCase())||
+      (m.author||'').toLowerCase().includes(q.toLowerCase())||
+      (m.room_code||'').toLowerCase().includes(q.toLowerCase());
+  }):_allMsgs);
+}
+function renderMsgs(list){
+  var el=document.getElementById('msgsList');
+  if(!list.length){el.innerHTML='<div class="empty"><span class="empty-ico">💬</span>Aucun message</div>';return;}
+  el.innerHTML='<div style="font-size:12px;color:var(--muted);margin-bottom:10px;font-family:var(--font-mono)">'+list.length+' messages</div>'+
+    list.map(function(m){
+      return '<div class="row">'+
+        '<div class="row-info">'+
+          '<div style="display:flex;gap:6px;align-items:center;margin-bottom:3px">'+
+            '<span style="font-size:12px;font-weight:700;color:var(--purple)">'+esc(m.author||'?')+'</span>'+
+            '<span class="mono" style="font-size:10px;color:var(--dim)">#'+esc(m.room_code)+'</span>'+
+          '</div>'+
+          '<div class="row-name" style="font-size:13px;color:var(--text)">'+esc((m.content||'📎').slice(0,80))+'</div>'+
+          '<div class="row-meta">'+ago(m.created_at)+'</div>'+
+        '</div>'+
+        '<div class="row-acts"><button class="ico-btn ico-r" onclick="deleteMsg(\''+esc(m.id)+'\')">🗑</button></div>'+
+      '</div>';
+    }).join('');
+}
+function deleteMsg(id){
+  showSheet('🗑 Supprimer ce message ?','','',
+    [{label:'🗑 Supprimer',cls:'btn-danger',fn:async function(){
+      await SB.from('messages').delete().eq('id',id);
+      toast('✅ Supprimé','ok');
+      _allMsgs=_allMsgs.filter(function(m){return m.id!==id;});
+      renderMsgs(_allMsgs);
+    }},{label:'Annuler',cls:'btn-ghost',fn:function(){}}]
+  );
+}
+
+// ══ STUDIO ══
+async function loadStudio(){
+  var el=document.getElementById('studioList');
+  el.innerHTML='<div class="ld"><div class="spin"></div></div>';
+  var {data}=await SB.from('studio_videos').select('id,title,thumbnail_url,video_url,views,created_at').order('created_at',{ascending:false}).limit(100);
+  document.getElementById('studioCount').textContent=(data||[]).length+' vidéos';
+  if(!data||!data.length){el.innerHTML='<div class="empty"><span class="empty-ico">🎬</span>Aucune vidéo</div>';return;}
+  el.innerHTML=data.map(function(v){
+    var th=v.thumbnail_url?'<img class="vthumb" src="'+esc(v.thumbnail_url)+'" loading="lazy" onerror="this.style.display=\'none\'">':'<div class="vthumb-ph">🎬</div>';
+    return '<div class="row">'+th+
+      '<div class="row-info" style="margin-left:10px">'+
+        '<div class="row-name">'+esc(v.title||'Sans titre')+'</div>'+
+        '<div class="row-meta">👁 '+(v.views||0)+' · '+ago(v.created_at)+'</div>'+
+      '</div>'+
+      '<div class="row-acts">'+
+        '<button class="ico-btn ico-p" onclick="shareToRoom(\''+esc(v.id)+'\',\''+esc(v.title||'')+'\',\''+esc(v.video_url||'')+'\',\''+esc(v.thumbnail_url||'')+'\')">💬</button>'+
+        '<button class="ico-btn ico-r" onclick="deleteVideo(\''+esc(v.id)+'\',\''+esc(v.title||'?')+'\')">🗑</button>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+function deleteVideo(id,title){
+  showSheet('🗑 Supprimer "'+title+'" ?','La vidéo sera définitivement supprimée de Studio.','',
+    [{label:'🗑 Supprimer',cls:'btn-danger',fn:async function(){
+      await SB.from('studio_videos').delete().eq('id',id);
+      await SB.from('studio_likes').delete().eq('video_id',id);
+      await SB.from('studio_comments').delete().eq('video_id',id);
+      toast('✅ Vidéo supprimée','ok');loadStudio();
+    }},{label:'Annuler',cls:'btn-ghost',fn:function(){}}]
+  );
+}
+function shareToRoom(id,title,url,thumb){
+  var code=prompt('Code de la salle ?');
+  if(!code) return;
+  SB.from('messages').insert({
+    room_code:code.trim().toLowerCase(),type:'studio_video',author:'Lucas \uD83D\uDEE1',
+    content:title,file_url:url,file_name:thumb,file_size:id,file_type:'studio_video',color:'#8b5cf6'
+  }).then(function(r){
+    toast(r.error?'❌ '+r.error.message:'✅ Partagé dans #'+code, r.error?'err':'ok');
+  });
+}
+
+// ══ UPLOAD ══
+function setDest(d){
+  _dest=d;
+  document.getElementById('dtStudio').classList.toggle('on',d==='studio');
+  document.getElementById('dtRoom').classList.toggle('on',d==='room');
+  document.getElementById('roomField').style.display=d==='room'?'block':'none';
+}
+function onFile(inp){
+  var f=inp.files[0];if(!f)return;
+  _file=f;
+  var z=document.getElementById('pickZone');z.classList.add('on');
+  document.getElementById('pickIco').textContent='✅';
+  document.getElementById('pickTitle').textContent='Vidéo sélectionnée';
+  document.getElementById('pickSub').textContent=fmtSz(f.size);
+  document.getElementById('pickName').textContent=f.name;
+  if(!document.getElementById('upTitle').value)
+    document.getElementById('upTitle').value=f.name.replace(/\.[^.]+$/,'').replace(/[-_]/g,' ');
+}
+async function doPublish(){
+  if(!_file){toast('Choisis une vidéo','warn');return;}
+  var title=(document.getElementById('upTitle').value||'').trim();
+  if(!title){toast('Ajoute un titre','warn');return;}
+  var rc='';
+  if(_dest==='room'){rc=(document.getElementById('upRoom').value||'').trim().toLowerCase();if(!rc){toast('Code de la salle manquant','warn');return;}}
+  var btn=document.getElementById('pubBtn');
+  btn.disabled=true;btn.innerHTML='<div class="spin"></div> Upload...';
+  showProg('Envoi vers Cloudinary...',0);
+  try{
+    var url=await cloudUp(_file);
+    var thumb=url.replace('/upload/','/upload/w_480,h_270,c_fill,f_jpg/').replace(/\.[^.]+$/,'.jpg');
+    setProg('Publication...',90);
+    if(_dest==='studio'){
+      var r=await SB.from('studio_videos').insert({video_url:url,thumbnail_url:thumb,title:title,description:(document.getElementById('upDesc').value||'').trim(),views:0,created_at:new Date().toISOString()});
+      if(r.error)throw new Error(r.error.message);
+      saveSessHistory({title,dest:'studio',thumb,ts:Date.now()});
+      toast('🎬 Publié dans Studio !','ok');
+    } else {
+      var r=await SB.from('messages').insert({room_code:rc,type:'studio_video',author:'Lucas \uD83D\uDEE1',content:title,file_url:url,file_name:thumb,file_size:'admin',file_type:'studio_video',color:'#8b5cf6'});
+      if(r.error)throw new Error(r.error.message);
+      saveRoomRecent(rc);
+      saveSessHistory({title,dest:'room',room:rc,thumb,ts:Date.now()});
+      toast('💬 Envoyé dans #'+rc+' !','ok');
+    }
+    setProg('Terminé !',100);resetUpload();loadUploadHistory();
+  }catch(e){toast('Erreur: '+e.message,'err');hideProg();}
+  btn.disabled=false;btn.innerHTML='🚀 Publier';
+  setTimeout(hideProg,3000);
+}
+function cloudUp(file){
+  return new Promise(function(resolve,reject){
+    var fd=new FormData();fd.append('file',file);fd.append('upload_preset',PRESET);
+    var xhr=new XMLHttpRequest();
+    xhr.open('POST','https://api.cloudinary.com/v1_1/'+CLOUD+'/auto/upload');xhr.timeout=180000;
+    xhr.upload.onprogress=function(e){if(e.lengthComputable){var p=Math.round(e.loaded/e.total*85);setProg(fmtSz(e.loaded)+' / '+fmtSz(e.total),p);}};
+    xhr.onload=function(){try{var r=JSON.parse(xhr.responseText);if(r.secure_url)resolve(r.secure_url);else reject(new Error(r.error&&r.error.message||'Échec'));}catch(e){reject(e);}};
+    xhr.onerror=function(){reject(new Error('Erreur réseau'));};xhr.ontimeout=function(){reject(new Error('Timeout'));};
+    xhr.send(fd);
+  });
+}
+function showProg(s,p){document.getElementById('progCard').classList.add('show');setProg(s,p);}
+function setProg(s,p){document.getElementById('progStatus').textContent=s;document.getElementById('progFill').style.width=p+'%';document.getElementById('progPct').textContent=p+'%';}
+function hideProg(){document.getElementById('progCard').classList.remove('show');}
+function resetUpload(){
+  _file=null;document.getElementById('fileInp').value='';
+  document.getElementById('upTitle').value='';document.getElementById('upDesc').value='';document.getElementById('upRoom').value='';
+  var z=document.getElementById('pickZone');z.classList.remove('on');
+  document.getElementById('pickIco').textContent='🎥';
+  document.getElementById('pickTitle').textContent='Appuie pour choisir';
+  document.getElementById('pickSub').textContent='MP4, MOV depuis ta galerie';
+  document.getElementById('pickName').textContent='';
+}
+function saveSessHistory(item){
+  var arr=JSON.parse(localStorage.getItem('cc_up_hist')||'[]');
+  arr.unshift(item);arr=arr.slice(0,8);localStorage.setItem('cc_up_hist',JSON.stringify(arr));
+}
+function loadUploadHistory(){
+  var arr=JSON.parse(localStorage.getItem('cc_up_hist')||'[]');
+  var el=document.getElementById('uploadHistory');
+  if(!arr.length){el.innerHTML='<div style="color:var(--muted);font-size:12px;padding:6px 0">Aucune publication récente</div>';return;}
+  el.innerHTML=arr.map(function(item){
+    var badge=item.dest==='studio'?'<span class="badge badge-purple">🎬 Studio</span>':'<span class="badge badge-green">💬 #'+esc(item.room||'')+'</span>';
+    var th=item.thumb?'<img style="width:56px;height:36px;border-radius:8px;object-fit:cover;flex-shrink:0" src="'+esc(item.thumb)+'" loading="lazy">':'<div style="width:56px;height:36px;border-radius:8px;background:var(--s2);flex-shrink:0;display:flex;align-items:center;justify-content:center">🎬</div>';
+    return '<div class="row" style="margin-bottom:7px">'+th+'<div class="row-info" style="margin-left:10px"><div class="row-name">'+esc(item.title)+'</div><div class="row-meta">'+ago(item.ts)+'</div>'+badge+'</div></div>';
+  }).join('');
+}
+function saveRoomRecent(code){
+  var arr=JSON.parse(localStorage.getItem('cc_rooms_r')||'[]');
+  arr=arr.filter(function(r){return r!==code;});arr.unshift(code);arr=arr.slice(0,6);
+  localStorage.setItem('cc_rooms_r',JSON.stringify(arr));loadRecentRooms();
+}
+function loadRecentRooms(){
+  var arr=JSON.parse(localStorage.getItem('cc_rooms_r')||'[]');
+  document.getElementById('recentRoomsChips').innerHTML=arr.map(function(r){
+    return '<div class="chip" onclick="document.getElementById(\'upRoom\').value=\''+esc(r)+'\';document.getElementById(\'upRoom\').focus()">'+esc(r)+'</div>';
+  }).join('');
+}
+
+// ══ LEADERBOARD ══
+async function loadLeaderboard(){
+  var el=document.getElementById('lbList');
+  el.innerHTML='<div class="ld"><div class="spin"></div></div>';
+  var {data}=await SB.from('user_drops').select('pseudo,streak,total_days').order('streak',{ascending:false}).limit(50);
+  if(!data||!data.length){el.innerHTML='<div class="empty"><span class="empty-ico">🏆</span>Leaderboard vide</div>';return;}
+  el.innerHTML=data.map(function(u,i){
+    var medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1)+'.';
+    var color=strColor(u.pseudo);
+    return '<div class="row">'+
+      '<div style="width:28px;text-align:center;font-size:16px;flex-shrink:0">'+medal+'</div>'+
+      '<div class="row-avatar" style="background:'+color+'">'+u.pseudo[0].toUpperCase()+'</div>'+
+      '<div class="row-info">'+
+        '<div class="row-name">'+esc(u.pseudo)+'</div>'+
+        '<div class="row-meta">🔥 '+u.streak+' streak · 💧 '+u.total_days+' total</div>'+
+      '</div>'+
+      '<button class="ico-btn ico-r" onclick="resetUserScore(\''+esc(u.pseudo)+'\')">↺</button>'+
+    '</div>';
+  }).join('');
+}
+function resetLeaderboard(){
+  showSheet('🔄 Reset total du leaderboard ?','Tous les scores et streaks seront remis à zéro.','',
+    [{label:'🔄 Reset tout',cls:'btn-danger',fn:async function(){
+      await SB.from('user_drops').delete().gte('total_days',0);
+      toast('✅ Leaderboard remis à zéro','ok');loadLeaderboard();
+    }},{label:'Annuler',cls:'btn-ghost',fn:function(){}}]
+  );
+}
+function resetUserScore(pseudo){
+  showSheet('↺ Reset '+pseudo+' ?','Son streak et total seront remis à zéro.','',
+    [{label:'↺ Reset',cls:'btn-danger',fn:async function(){
+      await SB.from('user_drops').delete().eq('pseudo',pseudo);
+      toast('✅ Score de '+pseudo+' remis à zéro','ok');loadLeaderboard();
+    }},{label:'Annuler',cls:'btn-ghost',fn:function(){}}]
+  );
+}
+
+// ══ MIA QUESTIONS ══
+async function loadMia(){
+  var el=document.getElementById('miaList');
+  el.innerHTML='<div class="ld"><div class="spin"></div></div>';
+  try{
+    var {data,error}=await SB.from('mia_unanswered').select('id,question,bot_reply,created_at').order('created_at',{ascending:false}).limit(50);
+    if(error) throw error;
+    if(!data||!data.length){el.innerHTML='<div class="empty"><span class="empty-ico">🤖</span>Aucune question sans réponse</div>';return;}
+    el.innerHTML=data.map(function(q){
+      return '<div class="card" style="margin-bottom:10px">'+
+        '<div style="font-size:12px;color:var(--muted);margin-bottom:8px;font-family:var(--font-mono)">'+ago(q.created_at)+'</div>'+
+        '<div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:8px">❓ '+esc(q.question)+'</div>'+
+        '<div style="font-size:12px;color:var(--muted);font-style:italic;border-left:2px solid var(--border);padding-left:10px">'+esc(q.bot_reply||'(pas de réponse)')+'</div>'+
+        '<button class="ico-btn ico-r" style="margin-top:10px;width:auto;padding:6px 10px;font-size:12px" onclick="deleteMiaQ(\''+q.id+'\')">🗑 Supprimer</button>'+
+      '</div>';
+    }).join('');
+  }catch(e){el.innerHTML='<div class="empty">⚠️ Table mia_unanswered introuvable<br><small>Crée-la dans Supabase</small></div>';}
+}
+function deleteMiaQ(id){
+  SB.from('mia_unanswered').delete().eq('id',id).then(function(){toast('✅ Supprimé','ok');loadMia();});
+}
+
+// ══ BLOCK SHEET ══
+var DURS=[{l:'15 min',m:15},{l:'1h',m:60},{l:'6h',m:360},{l:'24h',m:1440},{l:'7 jours',m:10080},{l:'À vie 🔒',m:99999999}];
+function blockSheet(name,type){
+  _blockMeta={name,type};
+  document.getElementById('blockTarget').textContent=(type==='user'?'Utilisateur : ':'Salle : ')+name;
+  document.getElementById('durGrid').innerHTML=DURS.map(function(d){
+    return '<div class="dur-btn" onclick="doBlock('+d.m+')">'+d.l+'</div>';
+  }).join('');
+  document.getElementById('blockOv').classList.add('show');
+}
+async function doBlock(min){
+  closeBlockSheet();
+  var until=min>=99999999?9999999999999:Date.now()+min*60*1000;
+  var type=_blockMeta.type,name=_blockMeta.name;
+  var content=(type==='user'?'BLOCK_USER|':'BLOCK_ROOM|')+name+'|'+until;
+  await SB.from('messages').insert({room_code:CTRL,type:'system',author:'ADMIN',content:content});
+  toast('🚫 '+name+' bloqué','warn');
+}
+function closeBlockSheet(){document.getElementById('blockOv').classList.remove('show');}
+
+// ══ REPORTS ══
+async function loadReports(){
+  var el=document.getElementById('reportsList');
+  el.innerHTML='<div class="ld"><div class="spin"></div></div>';
+  try{
+    var {data,error}=await SB.from('reports').select('id,message_id,room_code,author,content,reported_by,reason,created_at').order('created_at',{ascending:false}).limit(100);
+    if(error) throw error;
+    // Update badge
+    var badge=document.getElementById('reportsBadge');
+    if(badge&&data&&data.length>0) badge.innerHTML='<span class="badge badge-red">'+data.length+'</span>';
+    if(!data||!data.length){
+      el.innerHTML='<div class="empty"><span class="empty-ico">✅</span>Aucun signalement</div>';return;
+    }
+    el.innerHTML=data.map(function(r){
+      return '<div class="card" style="margin-bottom:10px;border-color:rgba(255,61,90,.2)">'+
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">'+
+          '<span class="badge badge-red">'+esc(r.reason||'?')+'</span>'+
+          '<span style="font-size:11px;color:var(--muted);margin-left:auto;font-family:var(--font-mono)">'+ago(r.created_at)+'</span>'+
+        '</div>'+
+        '<div style="font-size:12px;color:var(--muted);margin-bottom:6px">'+
+          '⚠️ Signalé par <strong style="color:#fff">'+esc(r.reported_by||'?')+'</strong>'+
+          ' · Message de <strong style="color:var(--red)">'+esc(r.author||'?')+'</strong>'+
+          ' dans <span class="mono" style="color:var(--purple)">#'+esc(r.room_code||'?')+'</span>'+
+        '</div>'+
+        '<div style="background:var(--s2);border-radius:10px;padding:10px;font-size:13px;color:var(--text);border-left:3px solid var(--red);margin-bottom:10px">'+
+          esc(r.content||'(pas de contenu)')+'</div>'+
+        '<div class="btn-row">'+
+          '<button class="btn btn-danger btn-sm" onclick="deleteReportedMsg(\''+esc(r.message_id)+'\',\''+esc(r.id)+'\')">🗑 Supprimer msg</button>'+
+          '<button class="btn btn-ghost btn-sm" onclick="dismissReport(\''+esc(r.id)+'\')">✅ Ignorer</button>'+
+          '<button class="btn btn-ghost btn-sm" onclick="blockSheet(\''+esc(r.author)+'\',\'user\')">🚫 Bloquer user</button>'+
+        '</div>'+
+      '</div>';
+    }).join('');
+  }catch(e){el.innerHTML='<div class="empty">⚠️ Table reports introuvable<br><small>Crée-la dans Supabase</small></div>';}
+}
+async function deleteReportedMsg(msgId, reportId){
+  showSheet('🗑 Supprimer le message signalé ?','Le message original sera effacé de ClassChat.','',
+    [{label:'🗑 Supprimer',cls:'btn-danger',fn:async function(){
+      if(msgId) await SB.from('messages').delete().eq('id',msgId);
+      await SB.from('reports').delete().eq('id',reportId);
+      toast('✅ Message supprimé','ok');loadReports();
+    }},{label:'Annuler',cls:'btn-ghost',fn:function(){}}]
+  );
+}
+async function dismissReport(reportId){
+  await SB.from('reports').delete().eq('id',reportId);
+  toast('✅ Signalement ignoré','ok');loadReports();
+}
+
+// ══ UTILS ══
+function ago(ts){var d=Date.now()-new Date(ts).getTime();if(d<60000)return 'à l\'instant';if(d<3600000)return Math.floor(d/60000)+'min';if(d<86400000)return Math.floor(d/3600000)+'h';return Math.floor(d/86400000)+'j';}
+function fmtSz(b){if(b<1024)return b+'o';if(b<1048576)return (b/1024).toFixed(0)+'Ko';return (b/1048576).toFixed(1)+'Mo';}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+function strColor(s){var h=0;for(var i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))>>>0;var c=['#9d6ef5','#38bdf8','#00d68f','#fbbf24','#ff3d5a','#fb923c','#e879f9'];return c[h%c.length];}
+
+// ══════════════════════════════════════════
+// PREMIUM ADMIN
+// ══════════════════════════════════════════
+
+var _genCodes = [];
+var _codesFilter = 'all';
+
+var PLAN_LABELS = {
+  flash:   {label:'⚡ Flash',    days:1,   price:'1€'},
+  week:    {label:'📅 Semaine',  days:7,   price:'5€'},
+  month:   {label:'🌙 Mensuel',  days:30,  price:'10€'},
+  quarter: {label:'💎 Trimestre',days:90,  price:'15€'},
+  half:    {label:'👑 Semestre', days:180, price:'25€'},
+};
+
+function randCode() {
+  var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  var code = 'CLASSCHAT-';
+  for (var i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  return code;
+}
+
+async function generateCodes() {
+  var plan = document.getElementById('genPlan').value;
+  var qty  = parseInt(document.getElementById('genQty').value);
+  var planData = PLAN_LABELS[plan];
+
+  // Generate unique codes
+  var codes = [];
+  for (var i = 0; i < qty; i++) codes.push(randCode());
+
+  // Insert into Supabase
+  var rows = codes.map(function(code) {
+    return { code: code, plan: plan, days: planData.days, used: false };
+  });
+
+  var { error } = await SB.from('premium_codes').insert(rows);
+  if (error) { alert('Erreur: ' + error.message); return; }
+
+  _genCodes = codes.map(function(c) { return { code: c, plan: plan, planData: planData }; });
+
+  // Show results
+  var res = document.getElementById('genResult');
+  var list = document.getElementById('genCodesList');
+  res.style.display = 'block';
+  list.innerHTML = _genCodes.map(function(g) {
+    return '<div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:rgba(212,168,67,.06);border:1px solid rgba(212,168,67,.15);border-radius:10px">'
+      + '<div style="flex:1">'
+      + '<div style="font-size:14px;font-weight:900;color:#f2cc6e;font-family:monospace;letter-spacing:1px">' + g.code + '</div>'
+      + '<div style="font-size:10px;color:var(--muted);margin-top:2px">' + g.planData.label + ' · ' + g.planData.price + ' · ' + g.planData.days + ' jours</div>'
+      + '</div>'
+      + '<button onclick="copyCode(this.dataset.code,this)" data-code="'+g.code+'" style="padding:5px 10px;border-radius:7px;background:rgba(212,168,67,.15);border:1px solid rgba(212,168,67,.3);color:#d4a843;font-size:10px;font-weight:800;cursor:pointer;font-family:inherit">Copier</button>'
+      + '</div>';
+  }).join('');
+
+  // Refresh codes list
+  loadCodes(_codesFilter);
+  loadPremiumStats();
+}
+
+function copyCode(code, btn) {
+  navigator.clipboard.writeText(code).then(function() {
+    btn.textContent = '✓ Copié';
+    setTimeout(function() { btn.textContent = 'Copier'; }, 1500);
+  });
+}
+
+function copyAllCodes() {
+  var text = _genCodes.map(function(g) { return g.code + ' — ' + g.planData.label + ' (' + g.planData.price + ')'; }).join('\n');
+  navigator.clipboard.writeText(text).then(function() {
+    var btn = event.target;
+    btn.textContent = '✓ Copié !';
+    setTimeout(function() { btn.textContent = '📋 Copier tout'; }, 2000);
+  });
+}
+
+function printCodes() {
+  if (!_genCodes.length) return;
+  var win = window.open('', '_blank');
+  var planData = _genCodes[0].planData;
+  var cards = _genCodes.map(function(g) {
+    return '<div class="card">'
+      + '<div class="card-title">ClassChat Premium</div>'
+      + '<div class="card-plan">' + g.planData.label + ' · ' + g.planData.price + '</div>'
+      + '<div class="card-code">' + g.code + '</div>'
+      + '<div class="card-sub">classchatv3.vercel.app/subscribe</div>'
+      + '</div>';
+  }).join('');
+  win.document.write('<!DOCTYPE html><html><head><title>Codes Premium ClassChat</title><style>'
+    + 'body{font-family:Arial,sans-serif;background:#f5f5f5;padding:20px}'
+    + '.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}'
+    + '.card{background:linear-gradient(135deg,#1a0e2e,#2d1b5e);color:white;border-radius:16px;padding:18px;text-align:center;border:2px solid #d4a843}'
+    + '.card-title{font-size:12px;font-weight:900;color:#d4a843;letter-spacing:2px;margin-bottom:4px}'
+    + '.card-plan{font-size:11px;color:rgba(255,255,255,.6);margin-bottom:10px}'
+    + '.card-code{font-size:15px;font-weight:900;color:#f2cc6e;letter-spacing:2px;font-family:monospace;background:rgba(0,0,0,.3);padding:8px 12px;border-radius:8px;margin-bottom:8px}'
+    + '.card-sub{font-size:9px;color:rgba(255,255,255,.3)}'
+    + '@media print{body{background:white}}'
+    + '</style></head><body>'
+    + '<h2 style="margin-bottom:16px;color:#333">Codes Premium — ' + planData.label + ' (' + _genCodes.length + ' codes)</h2>'
+    + '<div class="grid">' + cards + '</div>'
+    + '<script>window.onload=function(){window.print();}<\/script>'
+    + '</body></html>');
+}
+
+async function loadCodes(filter) {
+  _codesFilter = filter || 'all';
+  var el = document.getElementById('codesList');
+  if (!el) return;
+  el.innerHTML = '<div class="ld"><div class="spin"></div></div>';
+
+  // Update filter buttons style
+  ['All','Free','Used'].forEach(function(f) {
+    var btn = document.getElementById('filter' + f);
+    if (!btn) return;
+    var active = f.toLowerCase() === _codesFilter || (_codesFilter === 'all' && f === 'All');
+    btn.style.background = active ? 'rgba(212,168,67,.2)' : 'var(--s2)';
+    btn.style.color = active ? '#d4a843' : 'var(--muted)';
+    btn.style.borderColor = active ? 'rgba(212,168,67,.4)' : 'var(--border)';
+  });
+
+  var query = SB.from('premium_codes').select('*').order('created_at', {ascending: false}).limit(100);
+  if (filter === 'free') query = query.eq('used', false);
+  if (filter === 'used') query = query.eq('used', true);
+
+  var { data, error } = await query;
+  if (error || !data || !data.length) {
+    el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">' + (error ? error.message : 'Aucun code') + '</div>';
+    return;
+  }
+
+  el.innerHTML = data.map(function(c) {
+    var planData = PLAN_LABELS[c.plan] || {label: c.plan, price: '?'};
+    var usedBy = c.used ? (c.used_by_pseudo || '?') + ' · ' + (c.used_by_class || '') : '';
+    var usedDate = c.used_at ? new Date(c.used_at).toLocaleDateString('fr-FR') : '';
+    var border = c.used ? 'rgba(34,197,94,.15)' : 'var(--border)';
+    var codeColor = c.used ? '#86efac' : '#f2cc6e';
+    var usedHtml = c.used
+      ? ' · <span style="color:#86efac">✓ ' + usedBy + (usedDate ? ' le ' + usedDate : '') + '</span>'
+      : ' · <span style="color:#d4a843">disponible</span>';
+    var delBtn = !c.used
+      ? '<button data-cid="' + c.id + '" onclick="deleteCode(this.dataset.cid,this)" style="padding:4px 8px;border-radius:7px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);color:#f87171;font-size:10px;cursor:pointer;font-family:inherit">Suppr.</button>'
+      : '';
+    return '<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--s2);border-radius:10px;border:1px solid ' + border + '">'
+      + '<div style="flex:1;min-width:0">'
+      + '<div style="font-size:13px;font-weight:900;color:' + codeColor + ';font-family:monospace;letter-spacing:1px">' + c.code + '</div>'
+      + '<div style="font-size:10px;color:var(--muted);margin-top:2px">' + planData.label + ' · ' + planData.price + usedHtml + '</div>'
+      + '</div>' + delBtn + '</div>';
+  }).join('');
+}
+
+async function deleteCode(id, btn) {
+  if (!confirm('Supprimer ce code ?')) return;
+  btn.textContent = '...';
+  var { error } = await SB.from('premium_codes').delete().eq('id', id);
+  if (error) { alert(error.message); return; }
+  btn.closest('div[style]').remove();
+  loadPremiumStats();
+}
+
+async function loadPremiumStats() {
+  var [codesRes, usedRes, membersRes] = await Promise.all([
+    SB.from('premium_codes').select('id', {count:'exact', head:true}),
+    SB.from('premium_codes').select('id', {count:'exact', head:true}).eq('used', true),
+    SB.from('premium_users').select('id', {count:'exact', head:true}),
+  ]);
+  var setEl = function(id, val) { var el = document.getElementById(id); if(el) el.textContent = val; };
+  setEl('statCodesTotal', codesRes.count || 0);
+  setEl('statCodesUsed', usedRes.count || 0);
+  setEl('statPremUsers', membersRes.count || 0);
+}
+
+async function loadRequests() {
+  var el = document.getElementById('requestsList');
+  if (!el) return;
+  var { data, error } = await SB.from('premium_requests')
+    .select('*').eq('status','pending').order('created_at', {ascending:false}).limit(30);
+  if (error || !data || !data.length) {
+    el.innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted);font-size:13px">Aucune demande en attente</div>';
+    return;
+  }
+  el.innerHTML = data.map(function(r) {
+    var d = new Date(r.created_at).toLocaleDateString('fr-FR');
+    return '<div style="padding:12px;background:var(--s2);border-radius:12px;border:1px solid var(--border)">'
+      + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">'
+      + '<div style="font-size:13px;font-weight:800;color:var(--text)">' + (r.pseudo||'?') + ' — ' + (r.classe||'') + '</div>'
+      + '<div style="font-size:10px;color:var(--muted)">' + d + '</div>'
+      + '</div>'
+      + '<div style="font-size:11px;color:var(--muted);margin-bottom:8px">' + (r.prenom||'') + ' ' + (r.nom||'') + ' · ' + (r.label||r.plan) + ' · ' + (r.price||'') + '</div>'
+      + '<div style="display:flex;gap:6px">'
+      + '<button data-rid="' + r.id + '" onclick="markRequestDone(this.dataset.rid,this)" style="flex:1;padding:7px;border-radius:8px;background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.3);color:#86efac;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit">✓ Traité</button>'
+      + '<button data-rid="' + r.id + '" onclick="dismissRequest(this.dataset.rid,this)" style="padding:7px 12px;border-radius:8px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.15);color:#f87171;font-size:11px;cursor:pointer;font-family:inherit">✗</button>'
+      + '</div></div>';
+  }).join('');
+}
+
+async function markRequestDone(id, btn) {
+  btn.textContent = '...';
+  await SB.from('premium_requests').update({status:'done'}).eq('id', id);
+  btn.closest('div[style]').remove();
+}
+async function dismissRequest(id, btn) {
+  await SB.from('premium_requests').update({status:'dismissed'}).eq('id', id);
+  btn.closest('div[style]').remove();
+}
+
+// Hook into navTo pour charger les données
+var _origNavTo = window.navTo;
+window.navTo = function(page) {
+  _origNavTo(page);
+  if (page === 'premium') {
+    loadPremiumStats();
+    loadCodes('all');
+    loadRequests();
+  }
+};
+
+</script>
+</body>
+</html>
