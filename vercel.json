@@ -19,6 +19,9 @@
     { "src": "/games/arcade", "dest": "/public/games/arcade/index.html" },
     { "src": "/games/arcade/(.*)", "dest": "/public/games/arcade/index.html" },
     { "src": "/games/racing", "dest": "/public/games/racing/index.html" },
+    { "src": "/concours", "dest": "/public/concours/index.html" },
+    { "src": "/concours/ceremonie", "dest": "/public/concours/ceremonie/index.html" },
+    { "src": "/concours/(.*)", "dest": "/public/concours/index.html" },
     { "src": "/sitemap.xml", "dest": "/public/sitemap.xml" },
     { "src": "/(.*)", "dest": "/public/$1" }
   ]
