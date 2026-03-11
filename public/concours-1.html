@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ClassChat — Jeu Concours 🏆</title>
+<meta name="description" content="Participe au jeu concours ClassChat et gagne 1 semaine Premium !">
+<meta property="og:title" content="ClassChat — Jeu Concours 🏆">
+<meta property="og:description" content="Gagne 1 semaine Premium ClassChat — Inscris-toi maintenant !">
+<meta property="og:image" content="https://classchatv3.vercel.app/og-image.jpg">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#08070f;
+  --s1:#0f0c1e;
+  --s2:#16122e;
+  --acc:#8b7cf8;
+  --acc2:#a78bfa;
+  --gold:#f2cc6e;
+  --gold2:#d4a843;
+  --text:#fff;
+  --muted:rgba(255,255,255,.45);
+  --border:rgba(139,124,248,.2);
+}
+body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-height:100dvh;overflow-x:hidden}
+
+/* BG */
+body::before{content:'';position:fixed;inset:0;background:
+  radial-gradient(ellipse 80% 50% at 50% -20%,rgba(139,124,248,.25) 0%,transparent 70%),
+  radial-gradient(ellipse 60% 40% at 80% 80%,rgba(212,168,67,.12) 0%,transparent 60%),
+  radial-gradient(ellipse 50% 50% at 10% 90%,rgba(139,124,248,.1) 0%,transparent 60%);
+pointer-events:none;z-index:0}
+
+/* STARS */
+.stars{position:fixed;inset:0;z-index:0;pointer-events:none}
+.star{position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;animation:twinkle var(--d,3s) ease-in-out infinite var(--delay,0s)}
+@keyframes twinkle{0%,100%{opacity:.1}50%{opacity:.8}}
+
+.wrap{position:relative;z-index:1;max-width:480px;margin:0 auto;padding:20px 16px 100px}
+
+/* HEADER */
+.hdr{text-align:center;padding:40px 0 30px}
+.hdr-crown{font-size:56px;display:block;animation:float 3s ease-in-out infinite;filter:drop-shadow(0 0 20px rgba(212,168,67,.5))}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.hdr-title{font-size:32px;font-weight:900;background:linear-gradient(135deg,#fff 0%,var(--gold) 50%,var(--acc2) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.1;margin:10px 0 6px}
+.hdr-sub{font-size:14px;color:var(--muted);font-weight:700;letter-spacing:.5px}
+
+/* COUNTDOWN */
+.countdown-card{background:linear-gradient(135deg,rgba(139,124,248,.12),rgba(212,168,67,.08));border:1px solid rgba(212,168,67,.25);border-radius:20px;padding:20px;margin-bottom:20px;text-align:center}
+.cd-label{font-size:10px;font-weight:900;color:var(--gold);letter-spacing:2px;margin-bottom:12px}
+.cd-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.cd-item{background:rgba(0,0,0,.3);border-radius:12px;padding:10px 4px}
+.cd-num{font-size:28px;font-weight:900;color:#fff;line-height:1;display:block}
+.cd-unit{font-size:9px;font-weight:800;color:var(--muted);letter-spacing:1px;margin-top:2px;display:block}
+.cd-ended{font-size:16px;font-weight:900;color:var(--gold);padding:10px 0}
+
+/* PRIZES */
+.prizes{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px}
+.prize{background:var(--s1);border-radius:16px;padding:14px 8px;text-align:center;border:1px solid var(--border);position:relative;overflow:hidden}
+.prize.gold{border-color:rgba(212,168,67,.4);background:linear-gradient(135deg,rgba(212,168,67,.08),rgba(212,168,67,.02))}
+.prize.silver{border-color:rgba(192,192,192,.3)}
+.prize.bronze{border-color:rgba(176,141,87,.3)}
+.prize-rank{font-size:24px;display:block;margin-bottom:4px}
+.prize-label{font-size:10px;font-weight:900;color:var(--muted);letter-spacing:1px}
+.prize-val{font-size:13px;font-weight:900;color:#fff;margin-top:4px}
+
+/* RULES */
+.rules-card{background:var(--s1);border:1px solid var(--border);border-radius:20px;padding:18px;margin-bottom:20px}
+.rules-title{font-size:13px;font-weight:900;color:var(--acc2);letter-spacing:1px;margin-bottom:12px}
+.rule{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;font-size:13px;color:rgba(255,255,255,.7);line-height:1.4}
+.rule-num{width:22px;height:22px;border-radius:50%;background:rgba(139,124,248,.2);border:1px solid rgba(139,124,248,.3);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;color:var(--acc2);flex-shrink:0;margin-top:1px}
+
+/* FORM */
+.form-card{background:var(--s1);border:1px solid var(--border);border-radius:20px;padding:20px;margin-bottom:20px}
+.form-title{font-size:15px;font-weight:900;color:#fff;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.inp{width:100%;padding:13px 16px;border-radius:12px;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.1);color:#fff;font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;outline:none;transition:border-color .2s;margin-bottom:10px}
+.inp:focus{border-color:var(--acc)}
+.inp::placeholder{color:rgba(255,255,255,.3)}
+.check-wrap{display:flex;align-items:flex-start;gap:10px;margin-bottom:16px;cursor:pointer}
+.check-wrap input{width:18px;height:18px;margin-top:2px;accent-color:var(--acc);flex-shrink:0}
+.check-label{font-size:12px;color:rgba(255,255,255,.6);line-height:1.4}
+.check-label a{color:var(--acc2);text-decoration:none}
+.submit-btn{width:100%;padding:15px;border-radius:14px;background:linear-gradient(110deg,var(--acc),var(--acc2));border:none;color:#fff;font-family:'Nunito',sans-serif;font-size:15px;font-weight:900;cursor:pointer;transition:transform .2s,box-shadow .2s;box-shadow:0 4px 24px rgba(139,124,248,.3)}
+.submit-btn:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(139,124,248,.4)}
+.submit-btn:active{transform:translateY(0)}
+.submit-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.form-err{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);border-radius:10px;padding:10px 14px;font-size:12px;color:#fca5a5;font-weight:700;margin-bottom:10px;display:none}
+.form-err.show{display:block}
+
+/* SUCCESS */
+.success-card{display:none;background:linear-gradient(135deg,rgba(34,197,94,.12),rgba(34,197,94,.04));border:1px solid rgba(34,197,94,.3);border-radius:20px;padding:28px;text-align:center;margin-bottom:20px}
+.success-card.show{display:block;animation:popIn .4s cubic-bezier(.34,1.56,.64,1)}
+@keyframes popIn{from{transform:scale(.8);opacity:0}to{transform:scale(1);opacity:1}}
+.success-ico{font-size:48px;display:block;margin-bottom:12px}
+.success-title{font-size:20px;font-weight:900;color:#86efac;margin-bottom:6px}
+.success-sub{font-size:13px;color:rgba(255,255,255,.5)}
+
+/* PARTICIPANTS */
+.participants-card{background:var(--s1);border:1px solid var(--border);border-radius:20px;padding:18px;margin-bottom:20px}
+.part-count{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.part-num{font-size:28px;font-weight:900;color:var(--acc2)}
+.part-label{font-size:13px;color:var(--muted);font-weight:700}
+.part-bar{height:4px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;margin-top:8px}
+.part-fill{height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2));border-radius:2px;transition:width 1s ease}
+
+/* CEREMONY BANNER */
+.ceremony-banner{display:none;background:linear-gradient(110deg,rgba(212,168,67,.15),rgba(139,124,248,.15));border:1px solid rgba(212,168,67,.4);border-radius:20px;padding:20px;margin-bottom:20px;text-align:center;animation:pulse-glow 2s ease-in-out infinite}
+.ceremony-banner.show{display:block}
+@keyframes pulse-glow{0%,100%{box-shadow:0 0 20px rgba(212,168,67,.2)}50%{box-shadow:0 0 40px rgba(212,168,67,.4)}}
+.cer-title{font-size:18px;font-weight:900;color:var(--gold);margin-bottom:6px}
+.cer-sub{font-size:13px;color:rgba(255,255,255,.6);margin-bottom:14px}
+.cer-btn{display:inline-block;padding:12px 24px;border-radius:12px;background:linear-gradient(110deg,var(--gold2),var(--gold));color:#07060c;font-family:'Nunito',sans-serif;font-size:14px;font-weight:900;text-decoration:none;cursor:pointer;border:none}
+
+/* NAV */
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:14px 16px;display:flex;align-items:center;gap:12px;background:rgba(8,7,15,.8);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,.06)}
+.nav-logo{font-size:18px;font-weight:900;background:linear-gradient(135deg,var(--acc),var(--acc2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.nav-back{background:rgba(255,255,255,.08);border:none;color:#fff;font-size:16px;width:34px;height:34px;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;text-decoration:none}
+
+/* SHARING INSTRUCTIONS */
+.share-card{background:linear-gradient(135deg,rgba(212,168,67,.08),rgba(212,168,67,.02));border:1px solid rgba(212,168,67,.2);border-radius:20px;padding:18px;margin-bottom:20px}
+.share-title{font-size:13px;font-weight:900;color:var(--gold);letter-spacing:1px;margin-bottom:12px}
+.share-step{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:13px;color:rgba(255,255,255,.7)}
+.share-step-ico{font-size:18px;width:28px;text-align:center;flex-shrink:0}
+.share-tag{display:inline-block;background:rgba(139,124,248,.15);border:1px solid rgba(139,124,248,.3);border-radius:6px;padding:2px 8px;font-size:12px;font-weight:800;color:var(--acc2)}
+
+.mt8{margin-top:8px}
+.wrap{padding-top:80px}
+</style>
+</head>
+<body>
+
+<!-- Stars -->
+<div class="stars" id="stars"></div>
+
+<!-- Nav -->
+<nav class="nav">
+  <a href="/" class="nav-back">←</a>
+  <div class="nav-logo">🏆 ClassChat Concours</div>
+</nav>
+
+<div class="wrap">
+
+  <!-- Header -->
+  <div class="hdr">
+    <span class="hdr-crown">👑</span>
+    <div class="hdr-title">Jeu Concours<br>ClassChat</div>
+    <div class="hdr-sub">3 gagnants · 1 semaine Premium chacun</div>
+  </div>
+
+  <!-- Ceremony banner (shown when ceremony is live) -->
+  <div class="ceremony-banner" id="ceremonyBanner">
+    <div class="cer-title">🎉 La cérémonie commence !</div>
+    <div class="cer-sub">Le tirage au sort est en cours en direct !</div>
+    <a href="/concours/ceremonie" class="cer-btn">🎰 Voir la cérémonie →</a>
+  </div>
+
+  <!-- Countdown -->
+  <div class="countdown-card">
+    <div class="cd-label">⏳ FIN DES INSCRIPTIONS DANS</div>
+    <div class="cd-grid" id="cdGrid">
+      <div class="cd-item"><span class="cd-num" id="cdJ">--</span><span class="cd-unit">JOURS</span></div>
+      <div class="cd-item"><span class="cd-num" id="cdH">--</span><span class="cd-unit">HEURES</span></div>
+      <div class="cd-item"><span class="cd-num" id="cdM">--</span><span class="cd-unit">MIN</span></div>
+      <div class="cd-item"><span class="cd-num" id="cdS">--</span><span class="cd-unit">SEC</span></div>
+    </div>
+    <div class="cd-ended" id="cdEnded" style="display:none">🔒 Les inscriptions sont terminées !</div>
+  </div>
+
+  <!-- Prizes -->
+  <div class="prizes">
+    <div class="prize gold">
+      <span class="prize-rank">🥇</span>
+      <div class="prize-label">1ER</div>
+      <div class="prize-val">1 semaine<br>Premium</div>
+    </div>
+    <div class="prize silver">
+      <span class="prize-rank">🥈</span>
+      <div class="prize-label">2ÈME</div>
+      <div class="prize-val">1 semaine<br>Premium</div>
+    </div>
+    <div class="prize bronze">
+      <span class="prize-rank">🥉</span>
+      <div class="prize-label">3ÈME</div>
+      <div class="prize-val">1 semaine<br>Premium</div>
+    </div>
+  </div>
+
+  <!-- Participants count -->
+  <div class="participants-card">
+    <div class="part-count">
+      <div class="part-num" id="partCount">0</div>
+      <div class="part-label">participants inscrits</div>
+    </div>
+    <div class="part-bar"><div class="part-fill" id="partFill" style="width:0%"></div></div>
+  </div>
+
+  <!-- Sharing instructions -->
+  <div class="share-card">
+    <div class="share-title">📱 COMMENT PARTICIPER</div>
+    <div class="share-step"><span class="share-step-ico">1️⃣</span> Publie une story en nous mentionnant</div>
+    <div class="share-step"><span class="share-step-ico">2️⃣</span> Dis à tes amis d'aller sur <span class="share-tag">classchatv3.vercel.app</span></div>
+    <div class="share-step"><span class="share-step-ico">3️⃣</span> Remplis le formulaire ci-dessous</div>
+    <div class="share-step"><span class="share-step-ico">4️⃣</span> On valide ton inscription ✅</div>
+    <div class="share-step"><span class="share-step-ico">5️⃣</span> Regarde la cérémonie le <strong>18 mars à 18h30</strong> !</div>
+  </div>
+
+  <!-- Rules -->
+  <div class="rules-card">
+    <div class="rules-title">📋 RÈGLEMENT</div>
+    <div class="rule"><div class="rule-num">1</div>Ouvert à tous les utilisateurs ClassChat</div>
+    <div class="rule"><div class="rule-num">2</div>Une story publiée mentionnant ClassChat est obligatoire</div>
+    <div class="rule"><div class="rule-num">3</div>1 participation par personne maximum</div>
+    <div class="rule"><div class="rule-num">4</div>Tirage au sort parmi les inscriptions validées</div>
+    <div class="rule"><div class="rule-num">5</div>Les gagnants seront annoncés en direct le 18 mars à 18h30</div>
+    <div class="rule"><div class="rule-num">6</div>Aucun achat nécessaire — concours gratuit</div>
+  </div>
+
+  <!-- Form -->
+  <div class="form-card" id="formCard">
+    <div class="form-title">✍️ Inscription</div>
+    <div class="form-err" id="formErr"></div>
+    <input class="inp" id="fPseudo" placeholder="Ton pseudo ClassChat" maxlength="30">
+    <input class="inp" id="fEmail" type="email" placeholder="Ton email (pour te contacter si tu gagnes)">
+    <input class="inp" id="fStory" placeholder="Lien ou description de ta story publiée">
+    <div class="check-wrap">
+      <input type="checkbox" id="fRules">
+      <label class="check-label" for="fRules">J'ai lu et j'accepte le règlement. Je confirme avoir publié une story mentionnant ClassChat.</label>
+    </div>
+    <button class="submit-btn" id="submitBtn" onclick="submitForm()">🎉 Participer au concours !</button>
+  </div>
+
+  <!-- Success -->
+  <div class="success-card" id="successCard">
+    <span class="success-ico">🎊</span>
+    <div class="success-title">Inscription envoyée !</div>
+    <div class="success-sub">On valide ta participation sous 24h.<br>Sois là le <strong>18 mars à 18h30</strong> pour la cérémonie !</div>
+  </div>
+
+</div>
+
+<script>
+var SB_URL = 'https://ersxfcqumaftjucrqjwj.supabase.co';
+var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVyc3hmY3F1bWFmdGp1Y3JxandqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2NDg3NDIsImV4cCI6MjA4ODIyNDc0Mn0.CO_x6t-VyoZ9q2lMRMI7JFuBdTZl_axGpgLcB6POFTE';
+
+// Date limite : 18 mars 2026 18h00
+var DEADLINE = new Date('2026-03-18T18:00:00');
+// Cérémonie : 18 mars 2026 18h30
+var CEREMONY = new Date('2026-03-18T18:30:00');
+
+// Stars
+(function(){
+  var s = document.getElementById('stars');
+  for(var i=0;i<80;i++){
+    var el=document.createElement('div');
+    el.className='star';
+    el.style.cssText='left:'+Math.random()*100+'%;top:'+Math.random()*100+'%;--d:'+(2+Math.random()*4)+'s;--delay:'+(Math.random()*3)+'s';
+    s.appendChild(el);
+  }
+})();
+
+// Countdown
+function updateCountdown(){
+  var now = new Date();
+  var diff = DEADLINE - now;
+  if(diff <= 0){
+    document.getElementById('cdGrid').style.display='none';
+    document.getElementById('cdEnded').style.display='block';
+    document.getElementById('formCard').style.display='none';
+    // Check ceremony
+    if(now >= CEREMONY){
+      document.getElementById('ceremonyBanner').classList.add('show');
+    }
+    return;
+  }
+  var j=Math.floor(diff/86400000);
+  var h=Math.floor((diff%86400000)/3600000);
+  var m=Math.floor((diff%3600000)/60000);
+  var sec=Math.floor((diff%60000)/1000);
+  document.getElementById('cdJ').textContent=String(j).padStart(2,'0');
+  document.getElementById('cdH').textContent=String(h).padStart(2,'0');
+  document.getElementById('cdM').textContent=String(m).padStart(2,'0');
+  document.getElementById('cdS').textContent=String(sec).padStart(2,'0');
+}
+updateCountdown();
+setInterval(updateCountdown, 1000);
+
+// Load participants count
+async function loadCount(){
+  try{
+    // Compte TOUS les inscrits (pending + validated)
+    var r = await fetch(SB_URL+'/rest/v1/concours_inscriptions?select=id', {
+      headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Prefer':'count=exact','Range':'0-0'}
+    });
+    var rangeHeader = r.headers.get('content-range');
+    var count = rangeHeader ? parseInt(rangeHeader.split('/')[1]||'0') : 0;
+    if(isNaN(count)) count = 0;
+    document.getElementById('partCount').textContent = count;
+    var pct = Math.min(100, (count/30)*100);
+    document.getElementById('partFill').style.width = pct+'%';
+  }catch(e){
+    // En cas d erreur reseau, afficher 0
+    document.getElementById('partCount').textContent = '0';
+  }
+}
+loadCount();
+
+// Submit form
+async function submitForm(){
+  var pseudo = document.getElementById('fPseudo').value.trim();
+  var email  = document.getElementById('fEmail').value.trim();
+  var story  = document.getElementById('fStory').value.trim();
+  var rules  = document.getElementById('fRules').checked;
+  var err    = document.getElementById('formErr');
+
+  err.classList.remove('show');
+  if(!pseudo){err.textContent='Entre ton pseudo ClassChat.';err.classList.add('show');return;}
+  if(!email||!email.includes('@')){err.textContent='Entre un email valide.';err.classList.add('show');return;}
+  if(!story){err.textContent='Décris ou mets le lien de ta story.';err.classList.add('show');return;}
+  if(!rules){err.textContent='Tu dois accepter le règlement.';err.classList.add('show');return;}
+
+  var btn = document.getElementById('submitBtn');
+  btn.disabled=true;btn.textContent='Envoi en cours...';
+
+  try{
+    var r = await fetch(SB_URL+'/rest/v1/concours_inscriptions', {
+      method:'POST',
+      headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+      body:JSON.stringify({pseudo:pseudo,email:email,story_proof:story,status:'pending'})
+    });
+    if(!r.ok) throw new Error('Erreur '+r.status);
+    document.getElementById('formCard').style.display='none';
+    document.getElementById('successCard').classList.add('show');
+    loadCount();
+  }catch(e){
+    err.textContent='Erreur : '+e.message+'. Réessaie.';
+    err.classList.add('show');
+    btn.disabled=false;btn.textContent='🎉 Participer au concours !';
+  }
+}
+
+// Check if already registered
+try{
+  if(localStorage.getItem('cc_concours_registered')==='1'){
+    document.getElementById('formCard').style.display='none';
+    document.getElementById('successCard').classList.add('show');
+  }
+}catch(e){}
+</script>
+</body>
+</html>
