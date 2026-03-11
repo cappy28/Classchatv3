@@ -7,10 +7,19 @@
   "routes": [
     { "src": "/api/(.*)", "dest": "/api/$1" },
     { "src": "/app", "dest": "/public/app/index.html" },
-    { "src": "/apropos", "dest": "/public/apropos.html" },
-    { "src": "/sitemap.xml", "dest": "/public/sitemap.xml" },
+    { "src": "/app/(.*)", "dest": "/public/app/index.html" },
+    { "src": "/admin", "dest": "/public/admin/index.html" },
+    { "src": "/admin/(.*)", "dest": "/public/admin/index.html" },
     { "src": "/studio", "dest": "/public/studio/index.html" },
     { "src": "/studio/(.*)", "dest": "/public/studio/index.html" },
+    { "src": "/subscribe", "dest": "/public/subscribe/index.html" },
+    { "src": "/subscribe/(.*)", "dest": "/public/subscribe/index.html" },
+    { "src": "/aide", "dest": "/public/aide/index.html" },
+    { "src": "/apropos", "dest": "/public/apropos/index.html" },
+    { "src": "/games/arcade", "dest": "/public/games/arcade/index.html" },
+    { "src": "/games/arcade/(.*)", "dest": "/public/games/arcade/index.html" },
+    { "src": "/games/racing", "dest": "/public/games/racing/index.html" },
+    { "src": "/sitemap.xml", "dest": "/public/sitemap.xml" },
     { "src": "/(.*)", "dest": "/public/$1" }
   ]
 }
